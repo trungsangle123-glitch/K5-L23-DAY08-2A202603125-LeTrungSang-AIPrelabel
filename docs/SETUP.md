@@ -1,0 +1,109 @@
+# Cài đặt môi trường (Part 0)
+
+Mục tiêu: sau trang này, `python scripts/check_env.py` in **SẴN SÀNG** và bạn chạy được YOLO26 trên một ảnh.
+Mất khoảng 20–30 phút (phần lớn là chờ tải). Làm ở **thư mục gốc của repo**.
+
+## 0. Bạn cần gì
+
+| Thứ | Bắt buộc? | Ghi chú |
+|---|---|---|
+| Python **3.10 – 3.12** | có | **3.13 trở lên: không dùng** (thiếu bản cài sẵn của torch / opencv / ultralytics); tạo venv bằng `py -3.12` (Windows) hoặc `python3.12`; chưa có thì cài 3.12 từ python.org. Kiểm tra: `python3 --version` |
+| `git` | có | YOLOE tự cài CLIP từ GitHub qua git |
+| ~8 GB ổ trống | có | trọng số ~0.5 GB (core) đến ~6 GB (đủ HF + SAM 3), cộng thư viện ~4 GB |
+| GPU | **không** | Có CUDA hay Apple MPS thì nhanh hơn; CPU vẫn làm được (xem mục 5) |
+| CVAT | có | cvat.ai (cloud) **hoặc** CVAT chạy bằng Docker trên máy bạn (xem [CVAT_AI.md](CVAT_AI.md)) |
+| Tài khoản HuggingFace | tuỳ chọn | chỉ cho SAM 3 (mục 4) |
+
+## 1. Tạo môi trường ảo và cài thư viện
+
+macOS / Linux:
+
+```bash
+cd Day8-AI-Assisted-Labeling        # thư mục repo của bạn
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+pip install -r requirements.txt
+```
+
+Windows (PowerShell; hoặc dùng Git Bash / WSL và làm theo khối macOS/Linux):
+
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+pip install -r requirements.txt
+```
+
+> Nếu PowerShell chặn script: `Set-ExecutionPolicy -Scope Process Bypass`, rồi kích hoạt lại.
+
+Máy có **GPU NVIDIA**: cài torch đúng bản CUDA **trước** `requirements.txt` (chọn lệnh trên https://pytorch.org/get-started/locally/), ví dụ:
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+pip install -r requirements.txt
+```
+
+Dùng `uv` (nhanh hơn, tuỳ chọn): `uv venv --python 3.12 && source .venv/bin/activate && uv pip install -r requirements.txt`.
+
+## 2. Tải trọng số
+
+```bash
+python scripts/download_models.py --set core     # YOLO26m, YOLO26m-seg, YOLOE-26s-seg, SAM 2.1 base (~0.5 GB)
+python scripts/download_models.py --set hf       # Grounding DINO tiny + OWLv2 (~2 GB, cho Part 2 mục D)
+```
+
+Máy yếu / chỉ CPU: dùng `--set small` (n-size + SAM 2.1 tiny). Khi đó mọi lệnh có `--size m` đổi thành `--size n`, và `--sam2 sam2.1_t.pt`.
+
+Trọng số vào thư mục `models/` (không commit; đã có trong `.gitignore`). **YOLOE** lần chạy đầu sẽ tải thêm bộ mã hoá chữ (mobileclip) và cài CLIP từ git: cần mạng và `git`.
+
+## 3. Kiểm tra
+
+```bash
+python scripts/check_env.py
+```
+
+Đọc từng dòng: `PASS` ổn, `WARN` có thể bỏ qua, `FAIL` phải sửa. Rồi thử nhanh:
+
+```bash
+python scripts/prelabel.py --model yolo26 --size m --images img_011.jpg --conf 0.3 --out work/smoke
+```
+
+Kỳ vọng: in vài dòng "Số box theo lớp: person=…, motorbike=…, car=…" và tạo `work/smoke/viz/img_011.jpg` (mở ra xem: có box màu chồng lên ảnh).
+Lỗi thường gặp ở mục 6.
+
+## 4. SAM 3 (tuỳ chọn, không bắt buộc để đạt điểm)
+
+SAM 3 là model **gated** trên HuggingFace: phải xin quyền và đăng nhập mới tải được.
+
+1. Tạo tài khoản https://huggingface.co, vào https://huggingface.co/facebook/sam3 → đọc điều khoản → **Request access** (chờ được duyệt, có thể mất vài giờ).
+2. Tạo **access token** loại *read* tại https://huggingface.co/settings/tokens.
+3. Đăng nhập (token **không** được commit, không dán vào file trong repo):
+   ```bash
+   hf auth login           # hoặc: export HF_TOKEN=<token của bạn>
+   ```
+4. `python scripts/download_models.py --set sam3` rồi `python scripts/prelabel.py --model sam3 ...` (xem [MODELS.md](MODELS.md), mục E).
+
+Chưa được cấp quyền? Bỏ qua mục E, ghi vào `model_log.csv` dòng `sam3` với `decision = skipped (chưa có quyền)`.
+Bạn vẫn đạt đủ yêu cầu bằng SAM 2.1.
+
+## 5. Máy không có GPU (CPU only)
+
+- Dùng `--set small`, `--size n`, `--imgsz 640` (nhỏ hơn mặc định 1024, nhanh ~2.5×, nhưng bỏ sót vật nhỏ nhiều hơn: ghi nhận xét này vào `model_log.csv`).
+- Bỏ Grounding DINO và OWLv2 nếu quá chậm; YOLOE vẫn đủ làm open-vocabulary.
+- SAM 2.1 mask cho cả 8 ảnh seg mất vài phút trên CPU: chạy `--images` theo từng ảnh.
+- Thêm `--device cpu` vào mọi lệnh nếu `auto` chọn nhầm GPU.
+
+## 6. Lỗi hay gặp
+
+| Triệu chứng | Cách xử lý |
+|---|---|
+| `ModuleNotFoundError: No module named 'ultralytics'` (hoặc numpy, cv2…) | Chưa kích hoạt venv: `source .venv/bin/activate`; hoặc quên `pip install -r requirements.txt` |
+| `No module named 'clip'` / lỗi `git+https://github.com/ultralytics/CLIP.git` | Máy chưa có `git` hoặc bị chặn GitHub. Cài git; thử `pip install git+https://github.com/ultralytics/CLIP.git` bằng tay |
+| Tải trọng số chậm / lỗi mạng | Chạy lại `download_models.py` (tự bỏ qua file đã tải). Nếu lớp học dùng chung mạng: xin file từ giảng viên và đặt vào `models/` |
+| `MPS backend out of memory` / lỗi dtype trên Mac | Thêm `--device cpu` cho lệnh đó (OWLv2 đã tự chạy CPU) |
+| `CUDA out of memory` | `--size s` hoặc `--imgsz 640`; đóng chương trình khác dùng GPU |
+| `Cannot access gated repo ... facebook/sam3` | Chưa được cấp quyền / chưa `hf auth login` (mục 4) |
+| `AttributeError: Sam3Model` | `pip install -U "transformers>=5.0"` |
+| `check_env.py` báo Python 3.13+ | Tạo lại venv bằng Python 3.12 (`py -3.12 -m venv .venv` hoặc `python3.12 -m venv .venv`) |
+| Chạy xong nhưng `0 box` | Đọc dòng "Tên thô KHÔNG có trong ánh xạ": có thể ánh xạ nhãn sai; hoặc `--conf` quá cao |

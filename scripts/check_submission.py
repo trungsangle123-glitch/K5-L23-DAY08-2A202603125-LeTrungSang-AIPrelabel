@@ -1,0 +1,158 @@
+"""Tự kiểm bài nộp trước khi push.   python scripts/check_submission.py
+
+Chỉ kiểm CÓ / ĐỦ (file, cột, số dòng, định dạng), KHÔNG chấm nội dung. Hết `LỖI` rồi mới nộp.
+"""
+from __future__ import annotations
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+from common import ROOT, SUB, load_taxonomy, read_csv
+
+errs, warns = [], []
+
+
+def E(m): errs.append(m)
+def W(m): warns.append(m)
+
+
+def exists(p: Path, what: str = "") -> bool:
+    if not p.exists():
+        E(f"thiếu {p.relative_to(ROOT)} {what}".strip())
+        return False
+    return True
+
+
+def md_sections(p: Path, n_min: int, hint: str):
+    t = p.read_text(encoding="utf8")
+    heads = re.findall(r"^##\s+.+$", t, flags=re.M)
+    if len(heads) < n_min:
+        E(f"{p.relative_to(ROOT)}: chỉ có {len(heads)} mục '##', cần ≥ {n_min} ({hint})")
+    if "<<" in t:
+        E(f"{p.relative_to(ROOT)}: còn chỗ chưa điền `<<...>>`")
+    return t
+
+
+EXPECTED_RULES = {"min_box_height_px": 20, "match_iou": 0.5, "accept_iou": 0.9, "accept_mask_iou": 0.85, "trap_catch_min": 0.8,
+                  "error_rate_img_max": 0.02, "self_iou_min": 0.85, "self_class_min": 0.95, "recall_target": 0.9, "self_unmatched_max": 0.1}
+
+
+def main() -> None:
+    tax = load_taxonomy()
+    if tax.rules != EXPECTED_RULES:
+        E("taxonomy.json: mục `rules` bị đổi so với bản gốc (RULES.md: không được đổi ngưỡng)")
+    # README tiêu đề
+    rd = ROOT / "README.md"
+    first = rd.read_text(encoding="utf8").splitlines()[0] if rd.exists() else ""
+    if not re.match(r"^#\s*Day 08 Lab\s*[—-]\s*\d{5,}\s*-\s*\S+", first):
+        E("README.md dòng đầu phải là: `# Day 08 Lab — <MSHV> - <Họ và tên>` (xem SUBMISSION.md)")
+    # STUDENT.md
+    st = ROOT / "STUDENT.md"
+    if exists(st):
+        t = st.read_text(encoding="utf8")
+        if "<<" in t or re.search(r"[:：]\s*…", t):
+            E("STUDENT.md còn chỗ chưa điền")
+    # guideline
+    g = SUB / "guidelines" / "guideline_v1.1_calibrated.md"
+    if exists(g):
+        t = md_sections(g, 5, "mục tiêu, lớp, quy tắc, ca khó, QC+phiên bản")
+        if not re.search(r"v1\.1", t):
+            W("guideline_v1.1: không thấy chữ 'v1.1' trong bảng lịch sử thay đổi")
+        if not re.search(r"img_0\d\d", t):
+            W("guideline_v1.1: chưa dẫn ảnh cụ thể (img_0xx) cho ca khó mới")
+    # recipe, logs
+    if exists(SUB / "recipe.md", "(recipe pre-label cuối: model, prompt, ngưỡng, segmenter)"):
+        t = (SUB / "recipe.md").read_text(encoding="utf8")
+        if "<<" in t:
+            E("recipe.md còn chỗ chưa điền")
+    ml = SUB / "model_log.csv"
+    if exists(ml):
+        rows = [r for r in read_csv(ml) if (r.get("run_id") or "").strip()]
+        if len(rows) < 6:
+            E(f"model_log.csv: {len(rows)} dòng, cần ≥ 6 lần thử (Part 2)")
+        for i, r in enumerate(rows, 2):
+            if not (r.get("what_went_wrong") or "").strip():
+                W(f"model_log.csv dòng {i}: cột what_went_wrong trống (ghi lỗi quan sát được)")
+        if len({r.get("model", "") for r in rows}) < 3:
+            E("model_log.csv: cần thử ≥ 3 model khác nhau")
+    tl = SUB / "time_log.csv"
+    if exists(tl):
+        rows = [r for r in read_csv(tl) if (r.get("step") or "").strip() and (r.get("minutes") or "").strip()]
+        need = {"gold_manual", "pilot_review", "batch_review"}
+        have = {r["step"].strip() for r in rows}
+        if not need <= have:
+            E(f"time_log.csv thiếu bước: {', '.join(sorted(need - have))}")
+    # nhãn
+    labels = SUB / "labels"
+    for f in ("gold_manual.json", "pilot_reviewed.json", "batch_reviewed.json", "seg_reviewed.json", "self_check_blind.json"):
+        exists(labels / f)
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_labels.py"), "--all"], capture_output=True, text=True)
+    for line in r.stdout.splitlines():
+        if "] LỖI: " in line:  # dòng lỗi chi tiết; dòng tổng kết có dạng "... đối tượng: LỖI n" nên bị bỏ qua
+            E("validate_labels " + line.replace("] LỖI: ", "] ", 1))
+    for f in ("pre_traps.coco.json", "traps_key.json", "seg_pre.coco.json"):
+        exists(SUB / "prelabel" / f, "(xem GUIDE.md Part 4/5)")
+    # số đo
+    qc = SUB / "qc"
+    for f in ("review_stats.json", "threshold_sweep.csv", "self_check.json", "qc_sample.csv", "qc_review.csv",
+              "qc_report_auto.md", "calibration_decisions.csv"):
+        exists(qc / f)
+    if (qc / "review_stats.json").exists():
+        d = json.loads((qc / "review_stats.json").read_text(encoding="utf8"))
+        if not d.get("traps"):
+            E("review_stats.json không có phần bẫy: chạy review_stats.py với --key submission/prelabel/traps_key.json")
+        if not d.get("gold"):
+            E("review_stats.json không có phần gold: chạy với --gold submission/labels/gold_manual.json")
+    if (qc / "qc_review.csv").exists():
+        rows = read_csv(qc / "qc_review.csv")
+        if any(not (r.get("error_type") or "").strip() for r in rows):
+            E("qc_review.csv còn dòng error_type trống (chưa kiểm)")
+    if (qc / "calibration_decisions.csv").exists():
+        rows = [r for r in read_csv(qc / "calibration_decisions.csv") if (r.get("quyet_dinh") or "").strip()]
+        if len(rows) < 5:
+            E(f"calibration_decisions.csv: {len(rows)} quyết định, cần ≥ 5")
+        srcs = {(r.get("nguon") or "").strip() for r in rows}
+        for need in ("loi_may", "cau_hoi_mo"):
+            if need not in srcs:
+                E(f"calibration_decisions.csv: chưa có ca nào có nguon = {need}")
+        bad = srcs - {"cau_hoi_mo", "can_review", "loi_may", "bay_lot", "self_check", ""}
+        if bad:
+            W(f"calibration_decisions.csv: nguon lạ: {', '.join(sorted(bad))}")
+    if exists(qc / "QC_REPORT.md"):
+        t = md_sections(qc / "QC_REPORT.md", 6, "khuôn trong chính file QC_REPORT.md")
+        if not re.search(r"\b(Release|Hold|Rework)\b", t, flags=re.I):
+            E("QC_REPORT.md: chưa có quyết định Release / Hold / Rework")
+    if exists(SUB / "REPORT.md"):
+        md_sections(SUB / "REPORT.md", 6, "khuôn trong chính file REPORT.md")
+    exists(SUB / "individual_note.md")
+    for f in ("final_det.coco.json", "release_manifest.json"):
+        exists(SUB / "release" / f, "(python scripts/build_release.py)")
+    # git
+    try:
+        n = int(subprocess.run(["git", "rev-list", "--count", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip() or 0)
+        if n < 5:
+            W(f"chỉ có {n} commit; nên commit theo từng Part (≥ 5)")
+        tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.splitlines()
+        if any(t.startswith("work/") for t in tracked):
+            E("thư mục work/ đang bị commit (đã có trong .gitignore?)")
+        if any(t.endswith((".pt", ".pth", ".onnx", ".ts")) for t in tracked):
+            E("đang commit file trọng số model (.pt/.pth/.onnx/.ts): bỏ ra khỏi git")
+        for t in tracked:
+            if t.endswith((".md", ".json", ".csv", ".py", ".txt", ".sh", ".yaml", ".yml")) and (ROOT / t).exists():
+                if re.search(r"hf_[A-Za-z0-9]{25,}|(?i:password|secret|token)\s*[:=]\s*\S{12,}", (ROOT / t).read_text(encoding="utf8", errors="ignore")):
+                    E(f"có thể lộ secret/token trong {t}")
+    except Exception:
+        W("không kiểm được git (chưa git init?)")
+    for m in warns:
+        print(f"CẢNH BÁO: {m}")
+    for m in errs:
+        print(f"LỖI: {m}")
+    print(f"\n{len(errs)} lỗi, {len(warns)} cảnh báo." + (" Sạch lỗi: có thể nộp." if not errs else " Sửa hết LỖI rồi nộp."))
+    sys.exit(1 if errs else 0)
+
+
+if __name__ == "__main__":
+    main()
