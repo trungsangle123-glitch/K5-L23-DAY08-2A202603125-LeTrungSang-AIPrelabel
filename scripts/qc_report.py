@@ -35,8 +35,8 @@ def main() -> None:
         if not (qc / f).exists():
             die(f"Thiếu submission/qc/{f}. Chạy qc_sample.py và điền qc_review.csv trước.")
     sample, review = read_csv(qc / "qc_sample.csv"), read_csv(qc / "qc_review.csv")
-    rs = json.loads((qc / "review_stats.json").read_text(encoding="utf8")) if (qc / "review_stats.json").exists() else None
-    sc = json.loads((qc / "self_check.json").read_text(encoding="utf8")) if (qc / "self_check.json").exists() else None
+    rs = json.loads((qc / "review_stats.json").read_text(encoding="utf-8-sig")) if (qc / "review_stats.json").exists() else None
+    sc = json.loads((qc / "self_check.json").read_text(encoding="utf-8-sig")) if (qc / "self_check.json").exists() else None
 
     imgs = [s["image"] for s in sample]
     n_img, n_obj = len(imgs), sum(int(s["so_doi_tuong"]) for s in sample)

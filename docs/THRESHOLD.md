@@ -1,4 +1,4 @@
-# Chọn ngưỡng tin cậy theo lớp (Part 3, 15 phút)
+# Chọn ngưỡng tin cậy theo lớp (Part 3, 10 phút)
 
 **Một việc duy nhất:** tìm ngưỡng `conf` cho **từng lớp** để pre-label ít box thừa mà không bỏ sót thêm.
 

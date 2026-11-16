@@ -15,6 +15,13 @@ import argparse
 import sys
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 ROOT = Path(__file__).resolve().parent.parent
 SETS = {
     "core": ["yolo26m.pt", "yoloe-26s-seg.pt", "sam2.1_b.pt"],

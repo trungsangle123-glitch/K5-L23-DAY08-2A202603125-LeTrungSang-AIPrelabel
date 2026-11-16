@@ -67,11 +67,11 @@ Trong CVAT đây là công cụ **Interactor** (click trái = thêm, click phả
 
 ```bash
 # một click vào huy hiệu vàng trên thân xe: mask rất nhỏ (chỉ cái huy hiệu)
-python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --out work/sam2_a   # thêm --sam mobile_sam.pt để thử SAM 1
+python scripts/sam2_points.py --image img_013.jpg --pos "400,480" --out work/sam2_a   # thêm --sam mobile_sam.pt để thử SAM 1
 # thêm click lên mui xe: mask phủ cả xe
-python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --pos 600,110 --out work/sam2_b
+python scripts/sam2_points.py --image img_013.jpg --pos "400,480" --pos "600,110" --out work/sam2_b
 # thêm click ÂM lên người lái, thử 1 rồi 2-3 click
-python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --pos 600,110 --neg 720,300 --out work/sam2_c
+python scripts/sam2_points.py --image img_013.jpg --pos "400,480" --pos "600,110" --neg "720,300" --out work/sam2_c
 ```
 
 ![Mask SAM 2.1 khi click](assets/sam2_click.jpg)
@@ -86,7 +86,7 @@ python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --pos 600,110 --
 ### B2. Box → mask (kiểu "detector rồi segmenter"; đổi `--sam` để chọn phiên bản)
 
 ```bash
-python scripts/prelabel.py --model yolo26 --size m --classes person,motorbike,car --images img_004.jpg img_013.jpg \
+python scripts/prelabel.py --model yolo26 --size m --classes "person,motorbike,car" --images img_004.jpg img_013.jpg \
     --conf 0.3 --segmenter sam --sam sam2.1_b.pt --out work/prelabel/y26_sam2   # đổi --sam để so phiên bản
 ```
 

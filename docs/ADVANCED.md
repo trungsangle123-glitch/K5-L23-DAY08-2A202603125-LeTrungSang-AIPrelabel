@@ -57,7 +57,7 @@ Giới hạn: nhãn chuẩn pilot dựng từ pre-label ngưỡng 0.10 rồi s�
 ## 4. Mask cho cả 8 ảnh `seg` và review mask
 
 ```bash
-python scripts/prelabel.py --model yolo26 --size m --classes person,bicycle,motorbike,car,bus,truck --split seg --thr "<ngưỡng>" --conf 0.3 \
+python scripts/prelabel.py --model yolo26 --size m --classes "person,bicycle,motorbike,car,bus,truck" --split seg --thr "<ngưỡng>" --conf 0.3 \
     --segmenter sam --sam sam2.1_b.pt --out work/prelabel/seg_y26
 python scripts/prelabel.py --model yoloe --classes three_wheeler --split seg --conf 0.25 --segmenter sam --sam sam2.1_b.pt --out work/prelabel/seg_yoloe
 python scripts/merge_prelabels.py work/prelabel/seg_yoloe/pre.coco.json work/prelabel/seg_y26/pre.coco.json \

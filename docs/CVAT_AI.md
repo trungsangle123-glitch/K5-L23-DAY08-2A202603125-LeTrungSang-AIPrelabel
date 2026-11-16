@@ -54,7 +54,7 @@ python scripts/make_cvat_labels.py          # ghi cvat/labels_generated.json
 ```
 
 1. CVAT → **Projects → Create new project**, tên `day08-<MSHV>`.
-2. Mục **Labels** → tab **Raw** → dán toàn bộ `cvat/labels_generated.json` → **Done** → **Submit & Open**.
+2. Mục **Labels** → tab **Raw** → dán toàn bộ `cvat/labels_generated.json` → **Save** (hoặc **Done** tuỳ phiên bản CVAT) → **Submit & Open**.
 3. Kiểm tra: có đủ 8 nhãn (`person … three_wheeler`, `ignore_region`); mỗi nhãn (trừ `ignore_region`) có thuộc tính `conf` (text) và `can_review` (checkbox). Loại hình của nhãn là **Any** (vẽ được cả rectangle lẫn polygon).
 
 ![Dán nhãn vào tab Raw](assets/cvat_project_labels.png)
@@ -88,7 +88,7 @@ Sinh `work/tasks/{gold,review}/` (thêm `pilot`, `seg`, `selfcheck` nếu chạy
 <img src="assets/cvat/cvat-actions-menu.jpg" width="260" alt="Menu Actions của Task trong CVAT">
 
 1. Task → menu **Actions (⋮) → Upload annotations**.
-2. **Import format: COCO 1.0** → chọn file `.json` (ví dụ `submission/prelabel/pre_traps_import.coco.json`) → **OK**. CVAT nhận được cả `.json` lẫn `.zip`.
+2. **Import format: COCO 1.0** → chọn file `.json` (ví dụ `submission/prelabel/pre_traps_import.coco.json`) → **OK** (nếu `Import mode` đang để `Replace`, bấm thêm **Replace annotations** ở hộp thoại xác nhận). CVAT nhận được cả `.json` lẫn `.zip`.
 3. Mở Task: đếm số box có trong ảnh đầu tiên và so với `viz/` bạn xem trước. Lệch nhiều = nhãn đang sai (xem mục 8).
 
 ### 3b. (Nâng cao) Mask nhiều ảnh: XML thay vì COCO
@@ -103,7 +103,7 @@ Task → **Actions → Upload annotations → CVAT 1.1** → chọn `seg_pre.xml
 
 ### 3c. Điều cần biết sau khi nạp
 
-- Mọi nhãn nạp từ file có `source = file` (không phải `auto`: `auto` chỉ do Automatic annotation / agent tạo). Dùng **Filter** để lọc theo `source` hoặc theo nhãn.
+- Mọi nhãn nạp từ file có `source = file` (không phải `auto`: `auto` chỉ do Automatic annotation / agent tạo). Dùng **Filters** (hoặc **Filter**) để lọc theo `source` hoặc theo nhãn.
 - Thuộc tính `conf` là điểm của máy (chuỗi). Dùng để **xếp thứ tự duyệt** (xem 4), không thay việc nhìn ảnh.
 - **Nạp lại**: tuỳ phiên bản CVAT, nạp lần hai có thể **ghi đè** hoặc **cộng thêm** nhãn. Luôn đếm số box sau khi nạp. Muốn chắc chắn: **Actions → Remove annotations** rồi nạp lại một lần.
 
@@ -124,7 +124,7 @@ Xem toàn bộ phím bằng **F1** trong job. Những phím dùng nhiều (keyma
 
 **Quét ảnh trước, rồi mới nhìn nhãn máy** (chống thiên kiến): dùng nút **ẩn / hiện tất cả đối tượng** (biểu tượng con mắt ở đầu danh sách *Objects*, tên nút có thể khác theo phiên bản). Cách làm từng ảnh: ẩn hết → bạn tự đếm vật trong ảnh → hiện nhãn máy → đối chiếu bốn bước ([REVIEW_CHECKLIST.md](REVIEW_CHECKLIST.md)).
 
-**Thấy được box nào bạn chưa đụng tới / box nghi ngờ nhất:** dùng **Filter** theo `source` (`file` = nhãn máy nạp vào, `manual` = bạn vẽ) và theo thuộc tính `conf`.
+**Thấy được box nào bạn chưa đụng tới / box nghi ngờ nhất:** dùng **Filters** (hoặc **Filter**) theo `source` (`file` = nhãn máy nạp vào, `manual` = bạn vẽ) và theo thuộc tính `conf`.
 Với box máy bạn sửa trong CVAT, `source` có thể đổi, nên **không dùng `source` thay cho việc so file**: `review_stats.py` mới là nơi tính accepted / edited / deleted / added.
 
 ## 5. Export nhãn sau duyệt
@@ -163,7 +163,7 @@ Không dùng được B1? Thay bằng `scripts/sam2_points.py` (Part 5) cho ph�
 
 *Ba ô cần điền: **Model**, **Labels matching** (Model Spec → CVAT Spec; sai thì sai cả lô), **Clean previous annotations** (để **tắt**: bật sẽ xoá nhãn bạn đã vẽ). Ô *Threshold* có hay không tuỳ model. Ảnh từ tài liệu CVAT (MIT).*
 
-Task trong danh sách → **⋮ → Automatic annotation** → chọn **Model** → **Labels matching** (nhãn của model → nhãn Project) → **Clean old annotations** (**tắt**: bật sẽ xoá nhãn bạn đã vẽ) → **Annotate**.
+Task trong danh sách → **⋮ → Automatic annotation** → chọn **Model** → **Labels matching** (nhãn của model → nhãn Project) → **Clean previous annotations** (**tắt**: bật sẽ xoá nhãn bạn đã vẽ) → **Annotate**.
 - Chạy thử trên Task mẫu nhỏ trước khi chạy cả lô. Kiểm 5 ảnh đầu: ánh xạ sai thì sai cả lô.
 - Kết quả có `source = auto`: lọc theo `source = auto` để ra danh sách phải duyệt đầu tiên.
 

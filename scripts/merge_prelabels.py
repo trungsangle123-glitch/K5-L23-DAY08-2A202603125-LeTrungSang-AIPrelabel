@@ -9,7 +9,7 @@ gộp nhiều lần với ngưỡng khác nhau mà không cần chạy lại mod
 
 Ví dụ (three_wheeler của YOLOE thắng "car/truck" của YOLO26 khi chúng chồng nhau):
   python scripts/merge_prelabels.py work/prelabel/yoloe_batch/pre.coco.json work/prelabel/y26_batch/pre.coco.json \
-      --iou 0.6 --conf 0.3 --thr person=0.4,three_wheeler=0.25 --split batch,gold --out work/prelabel/merged_review/pre.coco.json
+      --iou 0.6 --conf 0.3 --thr "person=0.4,three_wheeler=0.25" --split "batch,gold" --out work/prelabel/merged_review/pre.coco.json
 """
 from __future__ import annotations
 
@@ -33,14 +33,22 @@ def main():
     sets = [load_coco(Path(f)) for f in a.files]
     thr = {}
     for part in (a.thr or "").split(","):
-        if part.strip():
-            k, v = part.split("=")
-            if k.strip() not in tax.classes:
-                die(f"--thr: lớp '{k}' không có trong taxonomy.")
-            thr[k.strip()] = float(v)
+        part = part.strip()
+        if not part:
+            continue
+        if "=" not in part:
+            die(f"--thr: sai định dạng '{part}': cần dạng lop=nguong (ví dụ person=0.4).")
+        k, v = part.split("=", 1)
+        k = k.strip()
+        if k not in tax.classes:
+            die(f"--thr: lớp '{k}' không có trong taxonomy.")
+        try:
+            thr[k] = float(v.strip())
+        except ValueError:
+            die(f"--thr: ngưỡng '{v.strip()}' của lớp '{k}' phải là số thực (ví dụ 0.4).")
     names = sorted({n for s in sets for n in s.images})
     if a.split:
-        names = [n for n in names if n in set(images_of(a.split.split(",")))]
+        names = [n for n in names if n in set(images_of([s.strip() for s in a.split.split(",") if s.strip()]))]
     images, anns, dropped = [], [], Counter()
     aid = 1
     for iid, name in enumerate(names, 1):

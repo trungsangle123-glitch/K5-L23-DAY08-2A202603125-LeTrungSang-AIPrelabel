@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import random
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -128,6 +129,12 @@ def main():
     save_json(Path(a.key), {"student": a.student, "seed": a.seed, "traps": key})
     c = Counter(k["type"] for k in key)
     print(f"Đã cài {len(key)} bẫy ({', '.join(f'{k}={v}' for k, v in c.items())}) trên {len({k['image'] for k in key})} ảnh.")
+    if len(key) < a.n:
+        print(
+            f"CẢNH BÁO: chỉ cài được {len(key)}/{a.n} bẫy "
+            "(pre-label thiếu box đủ điều kiện: cần điểm >= 0.5 cho missing/wrong_class, kích thước > 40x40px cho loose).",
+            file=sys.stderr,
+        )
     print(f"-> NẠP VÀO CVAT: {rel(imp)}  (chỉ 24 ảnh batch)")
     print(f"-> Đầy đủ (dùng cho review_stats --pre): {rel(Path(a.out))}")
     print(f"-> Đáp án (đừng mở trước khi duyệt xong): {rel(Path(a.key))}")

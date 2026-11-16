@@ -84,7 +84,7 @@ python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.5  --o
 # B. YOLOE: gõ chữ tìm tuk-tuk / xích lô / ba gác
 python scripts/prelabel.py --model yoloe --classes three_wheeler --split pilot --conf 0.25 --out work/prelabel/t_yoloe
 # C. SAM (BẮT BUỘC; chọn SAM 1 / 2.1: đổi --sam): box của YOLO26 -> mask
-python scripts/prelabel.py --model yolo26 --size m --classes person,motorbike,car --images img_004.jpg img_013.jpg \
+python scripts/prelabel.py --model yolo26 --size m --classes "person,motorbike,car" --images img_004.jpg img_013.jpg \
     --conf 0.3 --segmenter sam --sam sam2.1_b.pt --out work/prelabel/t_sam
 ```
 
@@ -117,7 +117,7 @@ Mở `submission/qc/threshold_sweep.md` và `.png` ([cách đọc](docs/THRESHOL
 1. Gộp pre-label cho 24 ảnh batch (+ 4 gold, chỉ để đo máy; gold **không** vào CVAT):
    ```bash
    python scripts/merge_prelabels.py work/prelabel/yoloe_all/pre.coco.json work/prelabel/y26_all/pre.coco.json \
-       --thr "<chuỗi ngưỡng từ Part 3>" --conf 0.3 --iou 0.6 --split batch,gold --out work/prelabel/merged_review/pre.coco.json
+       --thr "<chuỗi ngưỡng từ Part 3>" --conf 0.3 --iou 0.6 --split "batch,gold" --out work/prelabel/merged_review/pre.coco.json
    ```
 2. **Cài 12 bẫy** (hạt giống = MSHV):
    ```bash
@@ -133,7 +133,7 @@ Mở `submission/qc/threshold_sweep.md` và `.png` ([cách đọc](docs/THRESHOL
    ```
 6. Đọc `qc/review_stats.md`, viết `REPORT.md` mục 2–4: AI error profile, bắt bẫy loại nào lọt, máy có đáng dùng không (accepted, thời gian so với gán tay), **3 quy tắc giảm thiên kiến**.
 
-**Sản phẩm:** `prelabel/pre_traps.coco.json`, `prelabel/traps_key.json`, `labels/batch_reviewed.json`, `qc/review_stats.{json,md}`, `time_log.csv` (`batch_review`).
+**Sản phẩm:** `prelabel/pre_traps_import.coco.json`, `prelabel/pre_traps.coco.json`, `prelabel/traps_key.json`, `labels/batch_reviewed.json`, `qc/review_stats.{json,md}`, `time_log.csv` (`batch_review`).
 > *Tự hỏi:* accepted 84% mà bắt bẫy 60% nghĩa là gì? Vì sao `added` thấp không có nghĩa máy không sót vật?
 
 ## Part 5 — Mask SAM cho 3 vật (15 phút)
@@ -141,7 +141,7 @@ Mở `submission/qc/threshold_sweep.md` và `.png` ([cách đọc](docs/THRESHOL
 Chọn **3 vật khó** (xe ba bánh có người lái, xích lô, vật bị che). Cho mỗi vật dùng SAM với click (mô phỏng Interactor của CVAT), **phiên bản SAM bạn chọn** (`--sam`):
 
 ```bash
-python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --pos 600,110 --neg 720,300 \
+python scripts/sam2_points.py --image img_013.jpg --pos "400,480" --pos "600,110" --neg "720,300" \
     --sam sam2.1_b.pt --out submission/masks --name tuktuk_img013
 ```
 
@@ -172,7 +172,7 @@ Không bao giờ cắt: gold gán tay, ảnh bẫy, `REPORT.md` mục 7 (quyết
 ## Máy yếu, Windows, Mac
 
 - **Máy yếu / không GPU / RAM ≤ 8 GB:** dùng **[Google Colab](docs/COLAB.md)** (GPU T4 miễn phí) để chạy các lệnh `prelabel.py`; CVAT và các script đo vẫn chạy trên máy bạn. Hoặc local: `--size n --imgsz 640 --sam mobile_sam.pt`, tải `--set small` và `--set sam1`.
-- **Windows PowerShell:** lệnh nhiều dòng dùng `\` (bash): gộp thành một dòng hoặc thay bằng `` ` ``; giá trị có dấu phẩy phải trong nháy kép (`--split "batch,gold"`, `--thr "person=0.35,car=0.4"`); kích hoạt venv bằng `.venv\Scripts\Activate.ps1`. Dễ nhất: **Git Bash** hoặc **WSL**.
+- **Windows PowerShell:** lệnh nhiều dòng dùng `\` (bash): gộp thành một dòng hoặc thay bằng `` ` ``; mọi giá trị có dấu phẩy hoặc dấu `=` PHẢI bọc trong nháy kép (`--split "batch,gold"`, `--thr "person=0.35,car=0.4"`, `--pos "400,480"`, `--student "001"`) để PowerShell không tách chuỗi hoặc nuốt số `0` đầu; kích hoạt venv bằng `.venv\Scripts\Activate.ps1`. Dễ nhất: **Git Bash** hoặc **WSL**.
 - **CSV** (`model_log`, `time_log`, `calibration_decisions`, `qc_review`): sửa bằng trình soạn thảo văn bản, lưu **UTF-8**, dấu phẩy. Excel hay lưu sai định dạng.
 - **Mac Apple Silicon:** lỗi MPS thì `PYTORCH_ENABLE_MPS_FALLBACK=1` hoặc `--device cpu`.
 - **Phương án cuối** (mạng / máy quá yếu, không có Colab): file kết quả YOLO26 / YOLOE đã chạy sẵn ở `data/cache/` (ngưỡng 0.05, 36 ảnh): copy vào `work/prelabel/y26_all/pre.coco.json` và `work/prelabel/yoloe_all/pre.coco.json`, ghi rõ "dùng cache" vào `REPORT.md`. Bạn vẫn phải tự chạy tay các lệnh ở Part 2 trên vài ảnh.

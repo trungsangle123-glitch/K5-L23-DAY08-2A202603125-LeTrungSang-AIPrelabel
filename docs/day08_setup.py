@@ -11,6 +11,13 @@ import sys
 import time
 import urllib.request
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 GH = "https://github.com/ultralytics/assets/releases/download/v8.4.0/"
 PROFILES = {
     "8gb": ["yolo26n.pt", "yoloe-26s-seg.pt", "mobileclip2_b.ts", "mobile_sam.pt", "sam2.1_t.pt"],
@@ -58,8 +65,8 @@ class Report:
 def check(light):
     R = Report()
     v = sys.version_info
-    R.line((3, 10) <= v[:2] <= (3, 12), f"Python {v.major}.{v.minor}.{v.micro}",
-           "cần Python 3.10 - 3.12: tạo lại venv bằng Python 3.12")
+    R.line((3, 10) <= v[:2] <= (3, 13), f"Python {v.major}.{v.minor}.{v.micro}",
+           "cần Python 3.10 - 3.13 (khuyến nghị 3.12): tạo lại venv bằng Python 3.12")
     pkgs = [("numpy", "numpy"), ("cv2", "opencv-python-headless"), ("PIL", "pillow"), ("matplotlib", "matplotlib"), ("yaml", "pyyaml")]
     if not light:
         pkgs += [("torch", "torch"), ("ultralytics", "ultralytics"), ("clip", "CLIP của ultralytics")]
@@ -125,6 +132,9 @@ def check(light):
 
 if __name__ == "__main__":
     a = sys.argv[1:]
+    if not a or "-h" in a or "--help" in a:
+        print(__doc__)
+        sys.exit(0)
     if a[:1] == ["download"]:
         prof = a[a.index("--profile") + 1] if "--profile" in a and len(a) > a.index("--profile") + 1 else "8gb"
         if prof not in PROFILES:

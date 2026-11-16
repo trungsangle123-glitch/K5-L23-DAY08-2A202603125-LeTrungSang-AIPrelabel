@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Phần NHẸ chạy trên máy bạn khi model chạy ở Google Colab (docs/COLAB.md): các script đo, kiểm tra, vẽ. Không cần torch / ultralytics.
 numpy>=1.26
 pillow>=10.0

@@ -4,7 +4,9 @@ Chỉ kiểm CÓ / ĐỦ (file, cột, số dòng, định dạng), KHÔNG chấ
 """
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -27,7 +29,7 @@ def exists(p: Path, what: str = "") -> bool:
 
 
 def md_text(p: Path, n_min: int, hint: str) -> str:
-    t = p.read_text(encoding="utf8")
+    t = p.read_text(encoding="utf-8-sig")
     heads = re.findall(r"^##\s+.+$", t, flags=re.M)
     if len(heads) < n_min:
         E(f"{p.relative_to(ROOT)}: chỉ có {len(heads)} mục '##', cần ≥ {n_min} ({hint})")
@@ -41,16 +43,17 @@ EXPECTED_RULES = {"min_box_height_px": 20, "match_iou": 0.5, "accept_iou": 0.9, 
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     tax = load_taxonomy()
     if tax.rules != EXPECTED_RULES:
         E("taxonomy.json: mục `rules` bị đổi so với bản gốc (RULES.md: không được đổi ngưỡng)")
-    rd = (ROOT / "README.md").read_text(encoding="utf8") if (ROOT / "README.md").exists() else ""
-    m = re.search(r"^#\s*Day 08 Lab\s*[—-]\s*(\d{5,})\s*-\s*\S+", rd, flags=re.M)
+    rd = (ROOT / "README.md").read_text(encoding="utf-8-sig") if (ROOT / "README.md").exists() else ""
+    m = re.search(r"^#\s*Day 08 Lab\s*[—-]\s*([A-Za-z0-9_]{3,})\s*-\s*\S+", rd, flags=re.M)
     mshv = m.group(1) if m else None
     if not m:
         E("README.md phải có dòng tiêu đề: `# Day 08 Lab — <MSHV> - <Họ và tên>` (xem SUBMISSION.md)")
     if exists(ROOT / "STUDENT.md"):
-        t = (ROOT / "STUDENT.md").read_text(encoding="utf8")
+        t = (ROOT / "STUDENT.md").read_text(encoding="utf-8-sig")
         if "<<" in t:
             E("STUDENT.md còn chỗ chưa điền")
 
@@ -94,15 +97,22 @@ def main() -> None:
     labels = SUB / "labels"
     for f in ("gold_manual.json", "batch_reviewed.json"):
         exists(labels / f)
-    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_labels.py"), "--all"], capture_output=True, text=True)
+    sub_env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+    r = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "validate_labels.py"), "--all"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=sub_env,
+    )
     for line in r.stdout.splitlines():
         if "] LỖI: " in line:
             E("validate_labels " + line.replace("] LỖI: ", "] ", 1))
+    if r.returncode != 0 and not any(e.startswith("validate_labels ") for e in errs):
+        tail = next((ln.strip() for ln in reversed((r.stderr or r.stdout).splitlines()) if ln.strip()), "")
+        E(f"validate_labels lỗi thực thi (exit {r.returncode})" + (f": {tail}" if tail else ""))
     for f in ("pre_traps.coco.json", "traps_key.json"):
         exists(SUB / "prelabel" / f, "(xem GUIDE.md Part 4)")
     kp = SUB / "prelabel" / "traps_key.json"
     if kp.exists() and mshv:
-        if str(json.loads(kp.read_text(encoding="utf8")).get("student")) != mshv:
+        if str(json.loads(kp.read_text(encoding="utf-8-sig")).get("student")) != mshv:
             E(f"traps_key.json: student không khớp MSHV trong README ({mshv}): tạo bẫy bằng đúng MSHV của bạn")
     masks = list((SUB / "masks").glob("*.jpg")) + list((SUB / "masks").glob("*.png")) if (SUB / "masks").exists() else []
     if len(masks) < 3:
@@ -113,13 +123,14 @@ def main() -> None:
     for f in ("review_stats.json", "threshold_sweep.csv", "qc_sample.csv", "qc_review.csv", "qc_report_auto.md", "calibration_decisions.csv"):
         exists(qc / f)
     if (qc / "review_stats.json").exists():
-        d = json.loads((qc / "review_stats.json").read_text(encoding="utf8"))
+        d = json.loads((qc / "review_stats.json").read_text(encoding="utf-8-sig"))
         if not d.get("traps"):
             E("review_stats.json không có phần bẫy: chạy review_stats.py với --key submission/prelabel/traps_key.json")
         elif d["traps"].get("n", 0) < 10:
             E(f"review_stats.json: chỉ có {d['traps'].get('n', 0)} bẫy được chấm (cần ≥ 10 trong 12)")
         if not d.get("gold"):
-            E("review_stats.json không có phần gold: chạy với --gold submission/labels/gold_manual.json")
+            E("review_stats.json không có phần gold: chạy review_stats.py với --pre submission/prelabel/pre_traps.coco.json "
+              "(file đầy đủ batch+gold, không dùng pre_traps_import) và --gold submission/labels/gold_manual.json")
     if (qc / "qc_review.csv").exists():
         if any(not (r.get("error_type") or "").strip() for r in read_csv(qc / "qc_review.csv")):
             E("qc_review.csv còn dòng error_type trống (chưa kiểm)")
@@ -139,12 +150,20 @@ def main() -> None:
 
     # git
     try:
-        n = int(subprocess.run(["git", "rev-list", "--count", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip() or 0)
+        n = int(subprocess.run(
+            ["git", "rev-list", "--count", "HEAD"], cwd=ROOT, capture_output=True, text=True,
+            encoding="utf-8", errors="replace",
+        ).stdout.strip() or 0)
         if n < 4:
             W(f"chỉ có {n} commit; nên commit theo từng Part (≥ 4)")
-        tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.splitlines()
+        tracked = subprocess.run(
+            ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True,
+            encoding="utf-8", errors="replace",
+        ).stdout.splitlines()
         if any(t.startswith("work/") for t in tracked):
             E("thư mục work/ đang bị commit (đã có trong .gitignore?)")
+        if any(t.startswith("models/") and t != "models/.gitkeep" for t in tracked):
+            E("thư mục models/ đang bị commit (đã có trong .gitignore?)")
         if any(t.endswith((".pt", ".pth", ".onnx", ".ts")) for t in tracked):
             E("đang commit file trọng số model (.pt/.pth/.onnx/.ts): bỏ ra khỏi git")
         for t in tracked:

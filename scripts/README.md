@@ -15,7 +15,7 @@ Chạy **từ thư mục gốc repo** (`python scripts/<tên>.py`), venv đã k�
 | 5 | `sam2_points.py` | SAM (bản bất kỳ) với click | `<out>/<name>.jpg` (→ `submission/masks/`) |
 | 2, 3 | `merge_prelabels.py` | gộp nhiều model, áp ngưỡng, loại trùng | `pre.coco.json` |
 | 3 | `threshold_sweep.py` | ngưỡng theo lớp | `qc/threshold_sweep.*` |
-| 4 | `inject_traps.py` | cài ảnh bẫy | `prelabel/pre_traps.coco.json`, `traps_key.json` |
+| 4 | `inject_traps.py` | cài ảnh bẫy | `prelabel/pre_traps_import.coco.json`, `pre_traps.coco.json`, `traps_key.json` |
 | 4 | `review_stats.py` | accepted/edited/deleted/added, so với gold, bắt bẫy | `qc/review_stats.*` |
 | nâng cao | `coco_to_cvat_xml.py` | COCO → CVAT XML (polygon sạch) | `.xml` |
 | 3–6 | `validate_labels.py` | kiểm file COCO export từ CVAT | in màn hình |
@@ -33,7 +33,7 @@ Chạy **từ thư mục gốc repo** (`python scripts/<tên>.py`), venv đã k�
 | `--model` | `yolo26` · `yoloe` (bài chính) · `gdino` · `owlv2` · `sam3` (nâng cao) |
 | `--size` | cỡ YOLO: `n s m l x` (YOLOE: `s m l`); mặc định `m` / `s` |
 | `--split` / `--images` | `pilot` (8 ảnh thử model), `gold`, `batch`, `seg`, `all` (hoặc danh sách tên ảnh) |
-| `--conf`, `--thr person=0.4,car=0.5` | ngưỡng mặc định, ngưỡng riêng từng lớp |
+| `--conf`, `--thr "person=0.4,car=0.5"` | ngưỡng mặc định, ngưỡng riêng từng lớp |
 | `--classes` | chỉ **giữ** các lớp này (ví dụ `three_wheeler`) |
 | `--prompts 'tuk-tuk=three_wheeler,...'` | open-vocab: cụm chữ → lớp (mặc định lấy từ `taxonomy.json`) |
 | `--segmenter` | `none` · `native` (mask của model) · `sam` (box → SAM; `sam2` là tên cũ) |
@@ -61,7 +61,7 @@ Ghép box máy với box cuối **cùng lớp**, theo IoU giảm dần (ngưỡn
 | `added` | box cuối không ghép được | đối tượng sau duyệt |
 
 Vùng `ignore_region` không bị chấm. So với gold: TP / FP / FN cùng lớp, IoU ≥ 0.5; **residual** = lỗi của máy còn trong nhãn của bạn, **new** = lỗi do bạn tạo ra.
-Bẫy: `missing` đúng khi box gốc có lại (cùng lớp, IoU ≥ 0.5); `extra` đúng khi box ma biến mất; `wrong_class` đúng khi lớp gốc trở lại; `loose` đúng khi IoU với box gốc ≥ 0.85.
+Bẫy: `missing` đúng khi box gốc có lại (cùng lớp, IoU ≥ 0.5); `extra` đúng khi box ma biến mất; `wrong_class` đúng khi lớp gốc trở lại; `loose` đúng khi box cùng lớp có IoU với box gốc ≥ 0.75 (hoặc đã rời box lỗi IoU < 0.8 và vẫn đạt IoU với box gốc ≥ 0.5).
 
 ## Script kiểm được gì, không kiểm được gì
 

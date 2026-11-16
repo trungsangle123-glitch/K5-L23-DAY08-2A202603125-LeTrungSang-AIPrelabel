@@ -43,7 +43,7 @@ CAL-01,img_013|img_004,loi_may,"YOLO26 gọi tuk-tuk là car","luôn gán three_
 
 ```bash
 python scripts/build_release.py                       # nhãn cuối của 24 ảnh batch (có áp qc_fixed.json nếu có)
-python scripts/qc_sample.py --n 5 --seed 42           # mẫu = mọi ảnh có can_review + 5 ảnh ngẫu nhiên
+python scripts/qc_sample.py --n 5 --seed 42           # mẫu = tối đa 3 ảnh có can_review + 5 ảnh ngẫu nhiên
 # mở work/qc/review/*.jpg (id từng vật in sẵn), điền submission/qc/qc_review.csv
 python scripts/qc_report.py                           # thêm --guideline-gap N nếu còn câu hỏi chưa chốt
 ```

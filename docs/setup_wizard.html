@@ -188,6 +188,13 @@ import sys
 import time
 import urllib.request
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 GH = "https://github.com/ultralytics/assets/releases/download/v8.4.0/"
 PROFILES = {
     "8gb": ["yolo26n.pt", "yoloe-26s-seg.pt", "mobileclip2_b.ts", "mobile_sam.pt", "sam2.1_t.pt"],
@@ -235,8 +242,8 @@ class Report:
 def check(light):
     R = Report()
     v = sys.version_info
-    R.line((3, 10) <= v[:2] <= (3, 12), f"Python {v.major}.{v.minor}.{v.micro}",
-           "cần Python 3.10 - 3.12: tạo lại venv bằng Python 3.12")
+    R.line((3, 10) <= v[:2] <= (3, 13), f"Python {v.major}.{v.minor}.{v.micro}",
+           "cần Python 3.10 - 3.13 (khuyến nghị 3.12): tạo lại venv bằng Python 3.12")
     pkgs = [("numpy", "numpy"), ("cv2", "opencv-python-headless"), ("PIL", "pillow"), ("matplotlib", "matplotlib"), ("yaml", "pyyaml")]
     if not light:
         pkgs += [("torch", "torch"), ("ultralytics", "ultralytics"), ("clip", "CLIP của ultralytics")]
@@ -302,6 +309,9 @@ def check(light):
 
 if __name__ == "__main__":
     a = sys.argv[1:]
+    if not a or "-h" in a or "--help" in a:
+        print(__doc__)
+        sys.exit(0)
     if a[:1] == ["download"]:
         prof = a[a.index("--profile") + 1] if "--profile" in a and len(a) > a.index("--profile") + 1 else "8gb"
         if prof not in PROFILES:
@@ -394,7 +404,7 @@ function stepsFor(){
   }
 
   /* công cụ nền */
-  if(os==='win') st.push({id:'tools',t:'Cài Python 3.12, Git và Visual C++ Runtime',time:'5–10 phút',why:'Python 3.10–3.12 (bản 3.13 trở lên chưa có thư viện tương thích). Git dùng trong buổi học. Visual C++ Runtime để PyTorch chạy.',
+  if(os==='win') st.push({id:'tools',t:'Cài Python 3.12, Git và Visual C++ Runtime',time:'5–10 phút',why:'Python 3.10–3.13 (khuyến nghị 3.12; bản 3.14+ chưa hỗ trợ đầy đủ thư viện). Git dùng trong buổi học. Visual C++ Runtime để PyTorch chạy.',
     b:[{k:'cmd',l:'powershell',c:'winget install -e --id Python.Python.3.12\nwinget install -e --id Git.Git\nwinget install -e --id Microsoft.VCRedist.2015+.x64'},
        {k:'note',c:'Đóng và mở lại PowerShell sau khi cài. Không có winget? Tải Python 3.12 ở python.org (tick "Add python.exe to PATH") và Git ở git-scm.com.'},
        {k:'cmd',l:'powershell (kiểm tra)',c:'py -3.12 --version\ngit --version'},
@@ -402,7 +412,7 @@ function stepsFor(){
   if(lin) st.push({id:'tools',t:'Cài Python, venv, Git và công cụ build',time:'3–5 phút',why:'Ubuntu có Python sẵn nhưng thiếu venv và công cụ build.',
     b:[{k:'cmd',l:'bash',c:'sudo apt update\nsudo apt install -y python3 python3-venv python3-pip git build-essential unzip curl'},
        {k:'cmd',l:'bash (kiểm tra)',c:'python3 --version\ngit --version'},
-       {k:'expect',c:'Python 3.10 đến 3.12 là ổn (Ubuntu 22.04 có 3.10, 24.04 có 3.12).'}]});
+       {k:'expect',c:'Python 3.10 đến 3.13 là ổn (khuyến nghị 3.12; Ubuntu 22.04 có 3.10, 24.04 có 3.12).'}]});
   if(isMac()) st.push({id:'tools',t:'Cài Command Line Tools, Homebrew, Python 3.12 và Git',time:'10–15 phút',why:'macOS cần Homebrew để cài đúng phiên bản Python.',
     b:[{k:'cmd',l:'terminal',c:'xcode-select --install'},
        {k:'cmd',l:'terminal (bỏ qua nếu đã có brew)',c:'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'},
@@ -493,7 +503,7 @@ function modelsView(){
 /* ---------- lỗi ---------- */
 function troubleFor(){
   var os=S.os, T=[];
-  T.push(['pip báo "No matching distribution found for torch"','Python là 3.13 trở lên hoặc sai kiến trúc. Tạo lại venv bằng Python 3.12, cài lại.']);
+  T.push(['pip báo "No matching distribution found for torch"','Python là 3.14+ chưa hỗ trợ hoặc dưới 3.10, hoặc sai kiến trúc. Dùng Python 3.10–3.13 (3.12 khuyến nghị), tạo lại venv rồi cài lại.']);
   T.push(['Tải model chậm hoặc đứt giữa chừng','Chạy lại python day08_setup.py download: file đã có được bỏ qua. Hoặc tải tay theo bảng ở trên.']);
   T.push(['file kiểm tra báo "thiếu clip"','Chạy lại: pip install https://github.com/ultralytics/CLIP/archive/refs/heads/main.zip']);
   T.push(['YOLOE lần đầu chạy lâu hoặc lỗi tải mobileclip','YOLOE cần file mobileclip2_b.ts (254 MB) trong models/. Tải tay theo bảng rồi chạy lại.']);

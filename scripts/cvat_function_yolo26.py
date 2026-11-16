@@ -17,13 +17,21 @@ Nhãn của hàm trùng TÊN với taxonomy (person, bicycle, motorbike, car, bu
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 import PIL.Image
 
 import cvat_sdk.auto_annotation as cvataa
 
-_TAX = json.loads((Path(__file__).resolve().parent.parent / "submission" / "taxonomy.json").read_text(encoding="utf8"))
+_TAX = json.loads((Path(__file__).resolve().parent.parent / "submission" / "taxonomy.json").read_text(encoding="utf-8-sig"))
 _COCO_MAP = _TAX["coco_map"]
 # chỉ khai báo lớp mà YOLO26 (COCO) thật sự phát hiện được; three_wheeler cần model open-vocab (xem docs/MODELS.md)
 _CLASSES = [c["name"] for c in _TAX["classes"] if c["name"] in set(_COCO_MAP.values())]
@@ -41,12 +49,26 @@ def _device(pref: str) -> str:
     return "cpu"
 
 
+def _weights_path(name: str) -> str:
+    p = _MODELS / name
+    if p.exists():
+        return str(p)
+    _MODELS.mkdir(exist_ok=True)
+    try:
+        from ultralytics.utils.downloads import attempt_download_asset
+        got = attempt_download_asset(str(p))
+        if Path(got).exists():
+            return str(got)
+    except Exception:
+        pass
+    return name
+
+
 class Yolo26Function:
     def __init__(self, size: str = "m", seg: bool = False, device: str = "auto") -> None:
         from ultralytics import YOLO
         name = f"yolo26{size}{'-seg' if seg else ''}.pt"
-        p = _MODELS / name
-        self._model = YOLO(str(p) if p.exists() else name)
+        self._model = YOLO(_weights_path(name))
         self._seg = seg
         self._device = _device(device)
         self._ids = {c: i for i, c in enumerate(_CLASSES)}

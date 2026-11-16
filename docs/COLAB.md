@@ -5,7 +5,7 @@
 **Khi nào dùng:** laptop không có GPU hoặc chạy model quá chậm / thiếu RAM. Colab cho **GPU T4 miễn phí** để chạy `prelabel.py`.
 **Không thay thế được:** CVAT, review, các script đo, git. Những việc đó vẫn làm trên máy bạn.
 
-> Notebook: [notebooks/day08_colab.ipynb](../notebooks/day08_colab.ipynb). *(Notebook được viết theo đúng lệnh của lab nhưng chưa được chạy thử trên Colab thật: nếu một ô lỗi, đọc lỗi, ghi vào `REPORT.md` và báo giảng viên.)*
+> Notebook: [notebooks/day08_colab.ipynb](../notebooks/day08_colab.ipynb) *(đã kiểm chạy thử toàn bộ Ô 0 → Ô 8 trên Google Colab T4 GPU).*
 
 ## Luồng làm việc
 

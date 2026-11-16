@@ -36,7 +36,7 @@ def check(path: Path, expect: str, need_poly: bool, tax) -> int:
     if expect == "seg":
         want = sorted(k for k, v in sp.items() if v["split"] == "batch" and v["seg"])
     elif expect:
-        want = images_of(expect.split(","))
+        want = images_of([s.strip() for s in expect.split(",") if s.strip()])
     else:
         want = []
     errs += cs.problems
@@ -62,7 +62,7 @@ def check(path: Path, expect: str, need_poly: bool, tax) -> int:
             if x2 > w + 1 or y2 > h + 1 or x1 < -1 or y1 < -1:
                 errs.append(f"{n}: box #{o.id} {o.cls} nằm ngoài ảnh")
             if o.cls != tax.ignore and (y2 - y1) < tax.rules["min_box_height_px"]:
-                warns.append(f"{n}: box #{o.id} {o.cls} cao {y2 - y1:.0f}px < {tax.rules['min_box_height_px']}px (guideline: vật quá nhỏ dùng ignore_region)")
+                warns.append(f"{n}: box #{o.id} {o.cls} cao {y2 - y1:.1f}px < {tax.rules['min_box_height_px']}px (guideline: vật quá nhỏ dùng ignore_region)")
             if need_poly and o.cls != tax.ignore and not o.polys:
                 errs.append(f"{n}: #{o.id} {o.cls} không có polygon (task segmentation phải vẽ polygon/mask, không phải rectangle)")
     for m in warns[:12]:

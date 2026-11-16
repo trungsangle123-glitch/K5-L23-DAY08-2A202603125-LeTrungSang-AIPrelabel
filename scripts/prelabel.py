@@ -52,7 +52,10 @@ def parse_kv(s: Optional[str], cast=str) -> Dict[str, object]:
         if "=" not in part:
             die(f"Sai định dạng '{part}': cần dạng khoa=giatri (ví dụ person=0.3).")
         k, v = part.split("=", 1)
-        out[k.strip()] = cast(v.strip())
+        try:
+            out[k.strip()] = cast(v.strip())
+        except ValueError:
+            die(f"Sai giá trị '{v.strip()}' cho '{k.strip()}': không hợp lệ ({cast.__name__}).")
     return out
 
 
@@ -286,7 +289,7 @@ def main():
     ap.add_argument("--prompts", help="open-vocab: 'cụm chữ=lớp,cụm chữ=lớp' (mặc định lấy từ taxonomy.json cho --classes)")
     ap.add_argument("--classes", help="chỉ GIỮ các lớp này (cách nhau dấu phẩy), ví dụ three_wheeler")
     ap.add_argument("--conf", type=float, default=0.25, help="ngưỡng tin cậy mặc định")
-    ap.add_argument("--thr", help="ngưỡng riêng từng lớp, ví dụ person=0.3,car=0.4 (ghi đè --conf)")
+    ap.add_argument("--thr", help="ngưỡng riêng từng lớp, ví dụ \"person=0.3,car=0.4\" (ghi đè --conf)")
     ap.add_argument("--segmenter", default="none", choices=["none", "native", "sam", "sam2"])
     ap.add_argument("--sam", "--sam2", dest="sam", default="sam2.1_b.pt",
                     help="trọng số SAM khi --segmenter sam: SAM 1 = mobile_sam.pt | sam_b.pt | sam_l.pt ; SAM 2.1 = sam2.1_t.pt | sam2.1_s.pt | sam2.1_b.pt | sam2.1_l.pt")
@@ -304,7 +307,7 @@ def main():
     if a.size is None:
         a.size = "s" if a.model == "yoloe" else "m"
     device = pick_device(a.device)
-    keep = set(parse_kv(",".join(f"{c}=1" for c in a.classes.split(",")))) if a.classes else None
+    keep = {c.strip() for c in a.classes.split(",") if c.strip()} if a.classes else None
     thr = {k: float(v) for k, v in parse_kv(a.thr, float).items()}
     for k in thr:
         if k not in tax.classes:

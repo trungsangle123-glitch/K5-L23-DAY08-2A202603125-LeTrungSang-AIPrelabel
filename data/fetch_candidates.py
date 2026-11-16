@@ -6,6 +6,13 @@ Dùng: python data/fetch_candidates.py --out work/cands
 import argparse, csv, json, re, sys, time, urllib.parse, urllib.request
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 API = "https://commons.wikimedia.org/w/api.php"
 UA = {"User-Agent": "ai20k-lab-dataset-builder/1.0 (educational; contact: course-staff)"}
 OK_LIC = re.compile(r"^(CC BY(-SA)? [0-9.]+|CC0.*|Public domain.*|PD.*)$", re.I)
@@ -50,7 +57,7 @@ def main():
             rows.append({"title": p["title"].replace("File:", ""), "author": author, "license": lic,
                          "thumb": ii.get("thumburl"), "page": ii.get("descriptionurl"), "q": q})
         time.sleep(0.5)
-    (out / "cands.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1))
+    (out / "cands.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
     print(len(rows), "ứng viên ->", out / "cands.json")
 
 if __name__ == "__main__":

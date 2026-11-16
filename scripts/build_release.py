@@ -6,6 +6,7 @@ Ghi: submission/release/final_det.coco.json, release_summary.csv (đếm theo l�
 """
 from __future__ import annotations
 
+import argparse
 import json
 from collections import Counter
 from pathlib import Path
@@ -14,6 +15,7 @@ from common import SUB, build_coco, die, images_of, load_coco, load_taxonomy, ma
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     tax = load_taxonomy()
     src = SUB / "labels" / "batch_reviewed.json"
     if not src.exists():

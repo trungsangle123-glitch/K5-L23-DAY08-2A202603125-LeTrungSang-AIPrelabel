@@ -94,8 +94,8 @@ def roadmap():
     im = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(im)
     items = [("0", "Cài đặt", "TRƯỚC lớp", "venv · 3 model\nCVAT · (Colab)", GRAY), ("1", "Gold", "25'", "gán tay 4 ảnh\nKHÔNG AI", GREEN),
-             ("2", "Tour 3 model", "35'", "YOLO26 · YOLOE\nSAM", PURPLE), ("3", "Ngưỡng", "15'", "theo lớp\ntrên gold", ORANGE),
-             ("4", "Review", "80'", "24 ảnh + 12 bẫy\ncheck-list 4 bước", RED), ("5", "Mask SAM", "20'", "3 vật khó\nclick dương/âm", TEAL),
+             ("2", "Tour 3 model", "30'", "YOLO26 · YOLOE\nSAM", PURPLE), ("3", "Ngưỡng", "10'", "theo lớp\ntrên gold", ORANGE),
+             ("4", "Review", "95'", "24 ảnh + 12 bẫy\nchecklist 4 bước", RED), ("5", "Mask SAM", "15'", "3 vật khó\nclick dương/âm", TEAL),
              ("6", "Calibration\n+ QC + báo cáo", "45'", "guideline v1.1\nRelease/Hold/Rework", NAVY)]
     n = len(items)
     step = (W - 280) / (n - 1)
@@ -165,7 +165,7 @@ def cvat_job_ui():
     rrect(d, (20, 20, W - 20, 70), 6, fill="white", outline="#cdd5de")
     text(d, (40, 33), "Task #12  >  Job #34      Menu    Undo    Redo    Save", 20, NAVY, True)
     rrect(d, (W - 420, 28, W - 290, 62), 6, fill="#f0f3f7", outline="#cdd5de")
-    text(d, (W - 405, 35), "Filter  v", 18, NAVY)
+    text(d, (W - 405, 35), "Filters", 18, NAVY)
     # toolbar trái
     rrect(d, (20, 90, 90, 760), 6, fill="white", outline="#cdd5de")
     for k, lbl in enumerate(["Cur", "Box", "Poly", "AI", "Undo"]):
@@ -199,7 +199,7 @@ def cvat_job_ui():
     text(d, (1050, 545), "Phím: Tab · Del · Ctrl+1..9 · N · F · Ctrl+S", 17, NAVY, True)
     text(d, (1050, 575), "(F1 xem đầy đủ)", 16, GRAY)
     # callout số
-    marks = [(640, 45, "1", "Filter: lọc theo nhãn / thuộc tính / source"), (98, 300, "2", "AI Tools (nút AI): Interactor SAM, Detectors"), (560, 480, "3", "Box máy (màu theo lớp, kèm conf)"),
+    marks = [(640, 45, "1", "Filters: lọc theo nhãn / thuộc tính / source"), (98, 300, "2", "AI Tools (nút AI): Interactor SAM, Detectors"), (560, 480, "3", "Box máy (màu theo lớp, kèm conf)"),
              (1452, 108, "4", "Ẩn hết nhãn máy → quét ảnh TRƯỚC (bước 0)"), (1452, 404, "5", "conf & can_review"), (400, 760, "6", "Chuyển ảnh")]
     for x, y, n, _ in marks:
         d.ellipse((x - 16, y - 16, x + 16, y + 16), fill=RED)
@@ -232,11 +232,11 @@ def cvat_labels_raw():
     for k, ln in enumerate(code):
         text(d, (78, 288 + k * 26), ln, 17, "#9be9c8")
     rrect(d, (880, 272, 1250, 400), 10, fill="#fff7ec", outline="#ffd9a8")
-    text(d, (898, 284), "1. Mở file cvat/labels_generated.json", 17, NAVY, True)
-    text(d, (898, 314), "2. Copy TOÀN BỘ nội dung", 17, NAVY, True)
-    text(d, (898, 344), "3. Dán vào ô Raw", 17, NAVY, True)
+    text(d, (896, 286), "1. Mở cvat/labels_generated.json", 16, NAVY, True)
+    text(d, (896, 316), "2. Copy TOÀN BỘ nội dung", 16, NAVY, True)
+    text(d, (896, 346), "3. Dán vào ô Raw", 16, NAVY, True)
     rrect(d, (880, 420, 1050, 466), 8, fill="#2f7cf6")
-    text(d, (965, 443), "Done", 20, "white", True, "mm")
+    text(d, (965, 443), "Save", 20, "white", True, "mm")
     rrect(d, (1070, 420, 1250, 466), 8, fill="#f0f3f7", outline="#9aa6b4")
     text(d, (1160, 443), "Submit & Open", 18, NAVY, True, "mm")
     text(d, (60, 540), "Sơ đồ minh hoạ (không phải ảnh chụp màn hình). Tên nhãn phải TRÙNG TỪNG CHỮ với taxonomy.json.", 16, GRAY)
@@ -270,7 +270,7 @@ def cvat_upload_flow():
             text(d, (x + 38, 176), "COCO 1.0 (box)  |  CVAT 1.1 (XML)", 17, NAVY)
             text(d, (x + 24, 236), "Annotation file", 17, GRAY)
             rrect(d, (x + 24, 262, x + cw - 24, 340), 6, fill="#f7f9fb", outline="#9aa6b4")
-            text(d, (x + 40, 288), "pre_traps.coco.json", 19, NAVY, True)
+            text(d, (x + 36, 290), "pre_traps_import.coco.json", 17, NAVY, True)
             rrect(d, (x + cw - 130, 380, x + cw - 24, 424), 8, fill="#2f7cf6")
             text(d, (x + cw - 77, 402), "OK", 20, "white", True, "mm")
         else:
@@ -338,8 +338,8 @@ def two_paths():
             arrow(d, (x + bw + 4, 175), (x + bw + 36, 175), TEAL)
     # lane B
     rrect(d, (30, 280, W - 30, 490), 16, fill="#f4f1ff", outline=PURPLE, width=3)
-    text(d, (50, 292), "B · TRỰC TIẾP TRONG CVAT  (thử ít nhất một cách)", 22, PURPLE, True)
-    cols = [("B1  AI Tools", "Interactor SAM: click trái = thêm,\nclick phải = bớt → mask"), ("B2  Automatic annotation", "model có sẵn trong CVAT\nLabels matching · Clean old: TẮT"),
+    text(d, (50, 292), "B · TRỰC TIẾP TRONG CVAT  (tuỳ chọn trong 4 giờ)", 22, PURPLE, True)
+    cols = [("B1  AI Tools", "Interactor SAM: click trái = thêm,\nclick phải = bớt → mask"), ("B2  Automatic annotation", "model có sẵn trong CVAT\nLabels matching · Clean previous: TẮT"),
             ("B3  cvat-cli", "model CỦA BẠN chạy trên máy\ntask auto-annotate / agent")]
     cw = (W - 100 - 2 * 40) // 3
     for i, (t, s) in enumerate(cols):
@@ -359,7 +359,7 @@ def decision_tree():
     text(d, (40, 16), "Chọn Release / Hold / Rework: đi từ trên xuống, dừng ở câu đầu tiên đúng", 26, NAVY, True)
     rows = [("1", "Guideline còn câu hỏi CHƯA chốt, hoặc dữ liệu hỏng / không dùng được?", "HOLD", ORANGE, "làm rõ rồi quay lại"),
             ("2", "Ảnh lỗi > 2%  HOẶC  một loại lỗi lặp lại (>= 3 lỗi và >= 50%)  HOẶC  bắt bẫy < 80%  HOẶC  gán lại mù dưới ngưỡng?", "REWORK", RED, "sửa lỗi, đo lại, ghi vòng sau"),
-            ("3", "Không rơi vào hai câu trên", "RELEASE", GREEN, "kèm QC_REPORT + nêu giới hạn mẫu nhỏ")]
+            ("3", "Không rơi vào hai câu trên", "RELEASE", GREEN, "kèm qc_report_auto.md + REPORT.md")]
     for i, (n, q, res, c, note) in enumerate(rows):
         y = 80 + i * 120
         rrect(d, (40, y, 1000, y + 96), 14, fill="#f7f9fb", outline="#cdd5de")

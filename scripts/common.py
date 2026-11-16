@@ -5,6 +5,7 @@ Học viên KHÔNG cần sửa file này. Muốn đổi lớp / thuộc tính / 
 from __future__ import annotations
 
 import csv
+import io
 import json
 import sys
 from dataclasses import dataclass, field
@@ -12,6 +13,19 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
+
+
+def configure_utf8_stdio() -> None:
+    """Đảm bảo stdout/stderr luôn dùng UTF-8 khi bị pipe/redirect trên Windows."""
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
+
+configure_utf8_stdio()
 
 ROOT = Path(__file__).resolve().parent.parent
 TAXONOMY_PATH = ROOT / "submission" / "taxonomy.json"
@@ -60,7 +74,7 @@ def load_taxonomy() -> Taxonomy:
     if not TAXONOMY_PATH.exists():
         die(f"Không thấy {rel(TAXONOMY_PATH)}. Hãy chạy script từ thư mục gốc của repo.")
     try:
-        return Taxonomy(json.loads(TAXONOMY_PATH.read_text(encoding="utf8")))
+        return Taxonomy(json.loads(TAXONOMY_PATH.read_text(encoding="utf-8-sig")))
     except (json.JSONDecodeError, KeyError) as e:
         die(f"taxonomy.json bị lỗi cú pháp / thiếu trường ({e}).")
         raise
@@ -71,7 +85,7 @@ def load_split() -> Dict[str, dict]:
     """data/split.csv -> {tên ảnh: {'split': pilot|gold|batch, 'seg': bool}}"""
     if not SPLIT_CSV.exists():
         die("Thiếu data/split.csv.")
-    with SPLIT_CSV.open(encoding="utf8", newline="") as f:
+    with SPLIT_CSV.open(encoding="utf-8-sig", newline="") as f:
         return {r["image"]: {"split": r["split"], "seg": r["seg"].strip() in ("1", "yes", "true")}
                 for r in csv.DictReader(f)}
 
@@ -197,7 +211,7 @@ def _score_of(attrs: dict, an: dict) -> Optional[float]:
 
 
 def load_coco(path: Path) -> CocoSet:
-    data = json.loads(Path(path).read_text(encoding="utf8"))
+    data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     cats = {c["id"]: c["name"] for c in data.get("categories", [])}
     cs = CocoSet(Path(path), {}, {})
     id2name: Dict[int, str] = {}
@@ -295,8 +309,26 @@ def save_json(path: Path, obj) -> None:
 
 
 def read_csv(path: Path) -> List[dict]:
-    with path.open(encoding="utf-8-sig", newline="") as f:  # utf-8-sig: chịu được file CSV lưu từ Excel có BOM
-        return list(csv.DictReader(f))
+    raw = path.read_bytes()
+    text = None
+    for enc in ("utf-8-sig", "utf-8", "cp1252"):
+        try:
+            text = raw.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        text = raw.decode("utf-8", errors="replace")
+    lines = text.splitlines()
+    delim = None
+    if lines and lines[0].strip().lower() in ("sep=;", "sep=,"):
+        delim = lines[0].strip()[-1]
+        text = "\n".join(lines[1:])
+        lines = lines[1:]
+    if delim is None:
+        first = next((ln for ln in lines if ln.strip()), "")
+        delim = ";" if (";" in first and "," not in first) else ","
+    return list(csv.DictReader(io.StringIO(text, newline=""), delimiter=delim))
 
 
 def write_csv(path: Path, header: List[str], rows: List[dict]) -> None:

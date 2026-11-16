@@ -66,7 +66,7 @@ def main():
     use_mask = a.mode == "seg"
     acc_thr = r["accept_mask_iou"] if use_mask else r["accept_iou"]
     pre, fin = load_coco(Path(a.pre)), load_coco(Path(a.final))
-    allowed = set(images_of(a.splits.split(",")))
+    allowed = set(images_of([s.strip() for s in a.splits.split(",") if s.strip()]))
     imgs = sorted(n for n in fin.images if n in allowed)
     if not imgs:
         die("Không có ảnh chung nào giữa file final và các tập đã chọn. Kiểm tra --final và --splits.")
@@ -78,7 +78,7 @@ def main():
     trap_boxes: Dict[str, list] = defaultdict(list)
     keyd = None
     if a.key:
-        keyd = json.loads(Path(a.key).read_text(encoding="utf8"))["traps"]
+        keyd = json.loads(Path(a.key).read_text(encoding="utf-8-sig"))["traps"]
         for t in keyd:
             for fld in ("orig_box", "fake_box", "box", "bad_box"):
                 if t.get(fld):
@@ -132,7 +132,7 @@ def main():
         gold = load_coco(Path(a.gold))
         gimgs = [n for n in gold.images if n in pre.images]
         if not gimgs:
-            print("CẢNH BÁO: không có ảnh gold nào trong file pre (pre-label phải gồm cả ảnh gold: merge với --split batch,gold).")
+            print("CẢNH BÁO: không có ảnh gold nào trong file pre (pre-label phải gồm cả ảnh gold: merge với --split \"batch,gold\").")
         else:
             fin_g = [n for n in gimgs if n in fin.images]   # ảnh gold có trong nhãn sau duyệt (không bắt buộc)
             tags = {"pre": gimgs, "fin": fin_g}

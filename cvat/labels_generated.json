@@ -9,14 +9,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
@@ -30,14 +34,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
@@ -51,14 +59,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
@@ -72,14 +84,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
@@ -93,14 +109,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
@@ -114,14 +134,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
@@ -135,14 +159,18 @@
         "mutable": false,
         "input_type": "text",
         "default_value": "",
-        "values": []
+        "values": [
+          ""
+        ]
       },
       {
         "name": "can_review",
         "mutable": false,
         "input_type": "checkbox",
         "default_value": "false",
-        "values": []
+        "values": [
+          "false"
+        ]
       }
     ]
   },
