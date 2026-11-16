@@ -61,7 +61,7 @@ Ba tập ảnh (`data/split.csv`, 36 ảnh):
 1. **Fork** repo thành repo **public** của bạn (tên: [SUBMISSION.md](SUBMISSION.md)), `git clone`; đặt `git config user.name` và `user.email`.
 2. Làm theo [docs/SETUP.md](docs/SETUP.md): venv, `pip install -r requirements.txt`, `python scripts/download_models.py --set core` (3 model, ~0.35 GB).
 3. `python scripts/check_env.py` → **SẴN SÀNG**. **Máy yếu / không GPU:** dùng [Google Colab](docs/COLAB.md) để chạy model; trên máy bạn chỉ cần phần nhẹ: `pip install -r requirements-local.txt` (không có torch / ultralytics: `check_env.py` sẽ báo FAIL ở các mục đó, bình thường).
-4. Tạo **Project CVAT** từ `cvat/labels_generated.json` ([docs/CVAT_AI.md](docs/CVAT_AI.md) mục 1) và đọc một lượt [label contract](guideline/guideline_v1.0_label_contract.md).
+4. Cài **CVAT bằng Docker** ([docs/CVAT_AI.md](docs/CVAT_AI.md) mục 0), rồi tạo **Project** từ `cvat/labels_generated.json` (mục 1) và đọc một lượt [label contract](guideline/guideline_v1.0_label_contract.md).
 5. Điền [STUDENT.md](STUDENT.md), đổi dòng tiêu đề `# Day 08 Lab —` trong `README.md`. Commit.
 
 ## Part 1 — Gold: gán tay 4 ảnh, không AI (25 phút)

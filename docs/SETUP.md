@@ -1,6 +1,6 @@
 # Cài đặt môi trường (Part 0: làm TRƯỚC buổi học)
 
-> **Cách nhanh nhất:** mở **[setup_wizard.html](setup_wizard.html)** (tải file về rồi mở bằng trình duyệt). Chọn hệ điều hành (Windows, WSL2, Mac chip Apple, Mac Intel, Ubuntu), RAM (8 GB hay 16 GB trở lên) và CVAT; trang tự nhận diện máy, đề xuất chạy local hay Colab, rồi hiện từng bước kèm lệnh để copy. Trang này dưới đây là bản đọc.
+> **Cách nhanh nhất:** mở **[setup_wizard.html](setup_wizard.html)** (tải file về rồi mở bằng trình duyệt). Chọn hệ điều hành (Windows, WSL2, Mac chip Apple, Mac Intel, Ubuntu) và RAM (8 GB hay 16 GB trở lên); trang tự nhận diện máy, đề xuất chạy local hay Colab, rồi hiện từng bước kèm lệnh để copy. Trang này dưới đây là bản đọc.
 
 Mục tiêu: sau trang này, `python scripts/check_env.py` in **SẴN SÀNG** và bạn chạy được YOLO26 trên một ảnh.
 Mất khoảng 30–45 phút (phần lớn là chờ tải) nên **làm ở nhà trước buổi học**, không tính vào 4 giờ. Làm ở **thư mục gốc của repo**. Máy yếu: bỏ qua trang này, dùng [Google Colab](COLAB.md).
@@ -13,7 +13,7 @@ Mất khoảng 30–45 phút (phần lớn là chờ tải) nên **làm ở nhà
 | `git` | có | YOLOE tự cài CLIP từ GitHub qua git |
 | ~8 GB ổ trống | có | trọng số bài chính ~0.35 GB (bài nâng cao thêm ~6 GB), cộng thư viện ~4 GB |
 | GPU | **không** | Có CUDA hay Apple MPS thì nhanh hơn; CPU vẫn làm được (xem mục 5) |
-| CVAT | có | cvat.ai (cloud) **hoặc** CVAT chạy bằng Docker trên máy bạn (xem [CVAT_AI.md](CVAT_AI.md)) |
+| Docker + CVAT | có | CVAT **chạy bằng Docker trên máy bạn** (không dùng bản web): cài theo [CVAT_AI.md](CVAT_AI.md) mục 0; cần ~5–8 GB RAM khi chạy |
 | Tài khoản HuggingFace | tuỳ chọn | chỉ cho SAM 3 (mục 4) |
 
 ## 1. Tạo môi trường ảo và cài thư viện

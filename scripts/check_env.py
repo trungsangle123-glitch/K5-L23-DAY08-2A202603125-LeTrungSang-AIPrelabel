@@ -26,7 +26,7 @@ def line(level, msg, fix=""):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cvat", help="URL CVAT để thử kết nối, ví dụ http://localhost:8080 hoặc https://app.cvat.ai")
+    ap.add_argument("--cvat", help="URL CVAT để thử kết nối, ví dụ http://localhost:8080")
     a = ap.parse_args()
 
     v = sys.version_info

@@ -124,7 +124,7 @@ footer{color:var(--muted);font-size:.8rem;display:flex;flex-direction:column;gap
   <header>
     <div class="eyebrow">Day 08 · AI hỗ trợ gán nhãn</div>
     <h1>Cài đặt cho máy yếu (chỉ CPU)</h1>
-    <p class="lede">Chọn cấu hình máy của bạn bên trái. Trang tự đề xuất cách chạy model và hiện từng bước cài đặt kèm lệnh để copy. Tick từng bước khi xong; tiến độ được nhớ trên trình duyệt này.</p>
+    <p class="lede">Chọn cấu hình máy của bạn bên trái. CVAT chạy bằng Docker trên máy (không dùng bản web). Trang tự đề xuất cách chạy model và hiện từng bước cài đặt kèm lệnh để copy. Tick từng bước khi xong; tiến độ được nhớ trên trình duyệt này.</p>
   </header>
 
   <div class="grid">
@@ -136,10 +136,6 @@ footer{color:var(--muted);font-size:.8rem;display:flex;flex-direction:column;gap
       <div class="field">
         <div class="label">2. RAM</div>
         <div class="seg" id="ram-opts" role="group" aria-label="RAM"></div>
-      </div>
-      <div class="field">
-        <div class="label">3. CVAT</div>
-        <div class="seg" id="cvat-opts" role="group" aria-label="CVAT"></div>
       </div>
       <div class="field">
         <div class="label">Tự nhận diện</div>
@@ -192,7 +188,6 @@ var OS=[
  {id:'lin',  n:'Ubuntu / Linux',           s:'Ubuntu 22.04 hoặc 24.04, Debian'}
 ];
 var RAM=[{id:'8',n:'8 GB trở xuống'},{id:'16',n:'16 GB trở lên'}];
-var CVAT=[{id:'cloud',n:'cvat.ai (web)'},{id:'docker',n:'Docker trên máy'}];
 
 var S={os:null,ram:null,cvat:'cloud',plan:null,planUser:false,done:{}};
 function load(){try{var j=JSON.parse(localStorage.getItem('d8setup')||'{}');['os','ram','cvat','plan','planUser'].forEach(function(k){if(j[k]!==undefined&&j[k]!==null)S[k]=j[k]});S.done=j.done||{};}catch(e){}}
@@ -352,19 +347,23 @@ function stepsFor(){
          {k:'expect',c:'Thư mục work/prelabel/ xuất hiện cạnh scripts/.'}]});
   }
 
-  /* CVAT */
-  if(S.cvat==='cloud'){
-    st.push({id:'cvat',t:'Tạo tài khoản cvat.ai và Project',time:'10 phút',why:'Bản web miễn phí, không cần cài gì thêm trên máy.',
-      b:[{k:'link',l:'Mở cvat.ai',h:'https://app.cvat.ai'},
-         {k:'note',c:'Đăng ký, vào Projects → Create new project. Ở mục Labels chọn tab Raw, dán toàn bộ nội dung file cvat/labels_generated.json trong repo, bấm Done rồi Submit & Open.'},
-         {k:'expect',c:'Project có 8 nhãn: person, bicycle, motorbike, car, bus, truck, three_wheeler, ignore_region.'},
-         {k:'warn',c:'Gói miễn phí có thể giới hạn một số tính năng AI. Bài chính chỉ cần Upload annotations nên không ảnh hưởng.'}]});
-  }else{
-    st.push({id:'cvat',t:'Chạy CVAT bằng Docker trên máy',time:'20–30 phút',why:'Chỉ nên làm khi máy có từ 16 GB RAM còn trống. Tốn khoảng 8 GB RAM khi chạy.',
-      b:[{k:'warn',c:ram==='8'?'Máy 8 GB không nên chạy CVAT Docker cùng lúc với model. Hãy chọn cvat.ai.':'Cần Docker Desktop đang chạy'+(os==='win'?' (bật tuỳ chọn WSL2 backend)':'')+'.'},
-         {k:'cmd',l:shellOf(),c:'git clone https://github.com/cvat-ai/cvat\ncd cvat\ngit checkout v2.81.0\ndocker compose up -d\ndocker exec -it cvat_server bash -ic \'python3 ~/manage.py createsuperuser\''},
-         {k:'expect',c:'Mở http://localhost:8080 và đăng nhập bằng tài khoản vừa tạo. Sau đó tạo Project như hướng dẫn cvat.ai ở trên.'}]});
-  }
+  /* CVAT (chỉ Docker) */
+  var dk;
+  if(os==='win') dk={l:'powershell',c:'winget install -e --id Docker.DockerDesktop\n# khởi động lại máy, mở Docker Desktop, Settings → General → bật "Use WSL 2 based engine"',w:'Lỗi virtualization: bật Virtualization trong BIOS và Virtual Machine Platform trong Windows Features.'};
+  else if(os==='wsl') dk={l:'powershell (Windows)',c:'winget install -e --id Docker.DockerDesktop\n# mở Docker Desktop → Settings → Resources → WSL Integration → bật cho Ubuntu-24.04 → Apply & Restart',w:'Sau đó gõ lệnh docker ngay trong cửa sổ Ubuntu. Không cài Docker Engine riêng trong WSL để tránh xung đột.'};
+  else if(mac) dk={l:'terminal',c:'brew install --cask docker\nopen -a Docker',w:os==='macm'?'Image CVAT là amd64 nên trên chip Apple chạy qua giả lập: chạy được nhưng chậm hơn. Bật Settings → General → "Use Rosetta for x86/amd64 emulation" nếu có.':'Mac Intel chạy image CVAT trực tiếp.'};
+  else dk={l:'bash',c:'curl -fsSL https://get.docker.com | sudo sh\nsudo usermod -aG docker $USER\n# đăng xuất rồi đăng nhập lại để quyền docker có hiệu lực',w:'Không muốn chạy script cài đặt? Làm theo hướng dẫn chính thức docs.docker.com/engine/install/ubuntu.'};
+  st.push({id:'docker',t:'Cài Docker',time:'10–20 phút',why:'CVAT của lab chạy trong Docker trên máy bạn, không dùng bản web.',
+    b:[{k:'cmd',l:dk.l,c:dk.c},{k:'note',c:dk.w},
+       {k:'cmd',l:shellOf()+' (kiểm tra)',c:'docker --version\ndocker compose version'},
+       {k:'expect',c:'Cả hai lệnh in ra số phiên bản. Docker Desktop (Windows, Mac) phải đang mở.'}]});
+  var memTip=ram==='8'?'Máy 8 GB: trong Docker Desktop → Settings → Resources đặt Memory khoảng 5 GB'+(os==='win'||os==='wsl'?' (hoặc memory trong .wslconfig)':'')+'. Chỉ bật CVAT khi đang gán / duyệt nhãn, chạy model trên Colab, đóng trình duyệt thừa.':'Để Docker dùng 6–8 GB RAM là đủ cho CVAT.';
+  st.push({id:'cvat',t:'Chạy CVAT bằng Docker và tạo Project',time:'20–30 phút lần đầu',why:'Lần đầu tải image CVAT khá lâu. Những lần sau chỉ cần bật lại.',
+    b:[{k:'cmd',l:shellOf(),c:'git clone https://github.com/cvat-ai/cvat\ncd cvat\ngit checkout v2.81.0\ndocker compose up -d\ndocker exec -it cvat_server bash -ic \'python3 ~/manage.py createsuperuser\''},
+       {k:'expect',c:'Mở http://localhost:8080 và đăng nhập bằng tài khoản vừa tạo.'},
+       {k:'note',c:'Tạo Project: Projects → Create new project → mục Labels chọn tab Raw → dán toàn bộ file cvat/labels_generated.json trong repo lab → Done → Submit & Open. Project phải có 8 nhãn.'},
+       {k:'warn',c:memTip},
+       {k:'note',c:'Tắt khi không dùng: docker compose down (trong thư mục cvat; dữ liệu vẫn giữ). Bật lại: docker compose up -d.'}]});
   if(os==='wsl'){
     st[st.length-1].b.push({k:'note',c:'Cần đưa ảnh từ WSL lên CVAT trong trình duyệt Windows? Từ cửa sổ Ubuntu chạy: explorer.exe work/tasks/gold, rồi kéo thả ảnh vào CVAT.'});
   }
@@ -449,7 +448,6 @@ function opts(el,list,key,cls){
 function render(){
   opts(document.getElementById('os-opts'),OS,'os');
   opts(document.getElementById('ram-opts'),RAM,'ram','seg');
-  opts(document.getElementById('cvat-opts'),CVAT,'cvat','seg');
   renderDetect();
   var rec=recommend(), plan=curPlan();
   var v=document.getElementById('verdict'), f=document.getElementById('facts'), st=document.getElementById('steps');
@@ -464,7 +462,7 @@ function render(){
   v.className='verdict '+(local?'local':'colab');
   v.innerHTML='<div class="tag">'+(local?'Chạy local':'Dùng Colab')+'</div><h2>'+(local?'Chạy model trực tiếp trên máy bằng CPU':'Chạy model trên Google Colab, còn lại làm trên máy')+'</h2><p style="color:var(--muted)">'+esc(rec.why.join(' '))+(S.planUser&&S.plan!==rec.plan?' Bạn đã chọn khác với đề xuất.':'')+'</p>';
   var model=local?(S.ram==='8'?'YOLO26n, YOLOE-26s, SAM 2.1 tiny':'YOLO26m, YOLOE-26s, SAM 2.1 base'):'3 model chạy trên Colab T4';
-  f.innerHTML=[['Cài trên máy',local?'~6 GB ổ đĩa, 30–45 phút':'~1 GB ổ đĩa, 10–15 phút'],['Model',model],['Tốc độ mỗi ảnh',local?(S.ram==='8'?'~2–6 giây (n, 640 px)':'~3–10 giây (s, 800 px)'):'<1 giây (GPU Colab)'],['CVAT',S.cvat==='cloud'?'cvat.ai, không cài thêm':'Docker, ~8 GB RAM']].map(function(x){return '<div class="fact"><div class="k">'+x[0]+'</div><div class="v">'+esc(x[1])+'</div></div>'}).join('');
+  f.innerHTML=[['Cài trên máy',local?'~6 GB ổ đĩa, 30–45 phút':'~1 GB ổ đĩa, 10–15 phút'],['Model',model],['Tốc độ mỗi ảnh',local?(S.ram==='8'?'~2–6 giây (n, 640 px)':'~3–10 giây (s, 800 px)'):'<1 giây (GPU Colab)'],['CVAT','Docker trên máy, ~5–8 GB RAM khi chạy']].map(function(x){return '<div class="fact"><div class="k">'+x[0]+'</div><div class="v">'+esc(x[1])+'</div></div>'}).join('');
   var pt=document.getElementById('plan-toggle'); pt.textContent=local?'Đổi sang Colab':'Đổi sang chạy local';
   var steps=stepsFor(); cmdN=0;
   st.innerHTML=steps.map(function(s,i){

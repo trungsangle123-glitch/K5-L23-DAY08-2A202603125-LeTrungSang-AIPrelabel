@@ -7,7 +7,7 @@
 - Repo bài nộp (URL): <<>>
 - Commit chốt bài (hash): <<>>
 - Máy: <<hệ điều hành, GPU (CUDA / MPS / không có)>>
-- CVAT dùng: <<cvat.ai / Docker local, phiên bản>>
+- CVAT (Docker): <<phiên bản, ví dụ v2.81.0>>
 
 ## Kết quả tóm tắt (điền cuối bài; số lấy từ `submission/qc/*`, kèm mẫu số)
 

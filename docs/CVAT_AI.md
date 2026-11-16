@@ -2,17 +2,50 @@
 
 ![Hai cách đưa nhãn máy vào CVAT](assets/two_paths.png)
 
-Bản CVAT trong slide là **2.81**. Tên nút / menu giao diện dưới đây theo tài liệu CVAT 2.8x và có thể khác chút ở bản của bạn: nếu lệch, tra https://docs.cvat.ai và **ghi chú chỗ lệch vào `REPORT.md`** (đó là thông tin có giá trị). Bạn dùng **cvat.ai** (cloud) hoặc CVAT chạy Docker trên máy bạn (mục 7). Có **hai cách** đưa nhãn máy vào CVAT:
+Bản CVAT trong slide là **2.81**. Tên nút / menu giao diện dưới đây theo tài liệu CVAT 2.8x và có thể khác chút ở bản của bạn: nếu lệch, tra https://docs.cvat.ai và **ghi chú chỗ lệch vào `REPORT.md`** (đó là thông tin có giá trị). Lab này dùng **CVAT chạy bằng Docker trên máy bạn** (mục 0), **không** dùng bản web cvat.ai. Có **hai cách** đưa nhãn máy vào CVAT:
 
 | Cách | Làm gì | Khi nào chọn | Chạy được ở đâu |
 |---|---|---|---|
-| **A. Offline → import** (mặc định của lab) | Chạy model bằng `scripts/prelabel.py` trên máy bạn → file COCO / XML → **Upload annotations** vào Task | luôn dùng được, kiểm soát được từng tham số, lặp lại được | cvat.ai, CVAT Docker, mọi hệ điều hành |
-| **B. Trực tiếp trong CVAT** | B1: công cụ **AI Tools** (Interactor SAM) bấm ngay trên ảnh • B2: **Automatic annotation** bằng model có sẵn trong CVAT • B3: model **của bạn** nối vào CVAT bằng `cvat-cli` | B1: vài vật khó cần mask • B2/B3: gán cả Task không cần file trung gian | B1/B2 tuỳ gói cvat.ai hoặc CVAT tự cài có serverless; B3: cvat.ai và CVAT Docker |
+| **A. Offline → import** (mặc định của lab) | Chạy model bằng `scripts/prelabel.py` trên máy bạn → file COCO / XML → **Upload annotations** vào Task | luôn dùng được, kiểm soát được từng tham số, lặp lại được | CVAT Docker, mọi hệ điều hành |
+| **B. Trực tiếp trong CVAT** | B1: công cụ **AI Tools** (Interactor SAM) bấm ngay trên ảnh • B2: **Automatic annotation** bằng model có sẵn trong CVAT • B3: model **của bạn** nối vào CVAT bằng `cvat-cli` | B1: vài vật khó cần mask • B2/B3: gán cả Task không cần file trung gian | B1/B2 cần serverless (Nuclio, mục 7); B3: CVAT Docker thường |
 
 > **Bắt buộc:** Part 4 nạp nhãn bằng **cách A** (để có file `pre_traps` đo được). Cách B (trực tiếp trong CVAT) là **tuỳ chọn** trong 4 giờ: nếu có thời gian, thử B1 ở Part 5 hoặc B3 ở bài nâng cao.
 > Nhớ: máy chỉ **đề xuất**; mọi cách đều phải đi qua checklist review ([REVIEW_CHECKLIST.md](REVIEW_CHECKLIST.md)).
 
 ---
+
+## 0. Cài CVAT bằng Docker (làm trước buổi học)
+
+CVAT chạy trong Docker trên máy bạn (khoảng 5–8 GB RAM khi chạy, ~6 GB ổ đĩa). Làm một lần.
+
+**Bước 1. Cài Docker**
+
+| Hệ điều hành | Cách cài |
+|---|---|
+| Windows | `winget install -e --id Docker.DockerDesktop`, khởi động lại máy, mở Docker Desktop, bật **Use WSL 2 based engine** (Settings → General) |
+| Windows + WSL2 | Cài Docker Desktop như Windows; Settings → Resources → WSL Integration → bật cho bản Ubuntu của bạn. Rồi gõ lệnh `docker` ngay trong Ubuntu |
+| macOS (chip Apple hoặc Intel) | `brew install --cask docker`, mở Docker Desktop một lần để nó cấp quyền |
+| Ubuntu / Linux | `curl -fsSL https://get.docker.com \| sudo sh`, rồi `sudo usermod -aG docker $USER` và **đăng xuất / đăng nhập lại** |
+
+Kiểm tra: `docker --version` và `docker compose version` đều in ra phiên bản.
+
+**Bước 2. Chạy CVAT**
+
+```bash
+git clone https://github.com/cvat-ai/cvat
+cd cvat
+git checkout v2.81.0
+docker compose up -d
+docker exec -it cvat_server bash -ic 'python3 ~/manage.py createsuperuser'
+```
+
+Mở http://localhost:8080, đăng nhập bằng tài khoản vừa tạo. Lần đầu tải image mất 10–20 phút. Dừng khi không dùng: `docker compose down` (dữ liệu giữ trong volume); bật lại: `docker compose up -d`.
+
+**Lưu ý theo máy**
+- **RAM 8 GB:** CVAT + model cùng chạy sẽ thiếu bộ nhớ. Chạy model trên [Colab](COLAB.md), và chỉ bật CVAT khi đang gán / duyệt nhãn; đóng trình duyệt thừa. Giới hạn Docker Desktop ở khoảng 5 GB (Settings → Resources; Windows: file `.wslconfig`).
+- **Mac chip Apple:** image CVAT là amd64 nên chạy qua giả lập (Docker Desktop báo cảnh báo platform): chạy được nhưng chậm hơn; mở Settings → General bật *Use Rosetta for x86/amd64 emulation* nếu có.
+- **Windows:** nếu `docker compose up` báo lỗi virtualization, bật Virtualization trong BIOS và tính năng *Virtual Machine Platform*.
+- Cổng 8080 bị chiếm? Tắt chương trình đang dùng cổng đó rồi chạy lại.
 
 ## 1. Project và nhãn (làm một lần)
 
@@ -121,7 +154,7 @@ Với box máy bạn sửa trong CVAT, `source` có thể đổi, nên **không 
 Trong job: thanh công cụ trái → **AI Tools** → tab **Interactors** → chọn model **Segment Anything** (SAM / SAM 2 tuỳ máy chủ) → chọn nhãn → click **trái** vào vật (dương), **phải** vào vùng thừa (âm) → `N` kết thúc, mask thành polygon.
 Menu **Models** (thanh trên cùng) phải có tên model; không thấy nghĩa là máy chủ chưa cài.
 
-Hạn chế đã gặp: **mỗi nhà cung cấp một khác**. Gói miễn phí của cvat.ai có thể giới hạn AI tools; CVAT Docker mặc định **chưa** cài model (mục 7).
+Hạn chế: CVAT Docker mặc định **chưa** cài model AI (cần serverless, mục 7).
 Không dùng được B1? Thay bằng `scripts/sam2_points.py` (Part 5) cho phần "hiểu", và box → mask bằng SAM trong `prelabel.py --segmenter sam --sam <phiên bản>` cho phần "làm".
 
 ### B2. Automatic annotation (model có sẵn trong CVAT)
@@ -136,9 +169,9 @@ Task trong danh sách → **⋮ → Automatic annotation** → chọn **Model** 
 
 ### B3. Model CỦA BẠN chạy trong CVAT (`cvat-cli`)
 
-*(Cờ và lệnh dưới đây đã đối chiếu với `cvat-cli --help` bản 2.83; chưa thử với mọi gói cvat.ai. Tài khoản đăng nhập bằng Google/GitHub không có mật khẩu: dùng Personal Access Token qua `CVAT_ACCESS_TOKEN`. Gói miễn phí có thể giới hạn tính năng / quota: nếu bị chặn, ghi vào REPORT.)*
+*(Cờ và lệnh dưới đây đã đối chiếu với `cvat-cli --help` bản 2.83; chưa thử trên mọi máy. Có thể dùng Personal Access Token qua `CVAT_ACCESS_TOKEN` thay mật khẩu.)*
 
-Cách này **không cần máy chủ CVAT có GPU hay serverless**: model chạy trên máy bạn, CVAT chỉ nhận kết quả. Dùng được ở cvat.ai lẫn CVAT Docker, cả trên Mac.
+Cách này **không cần máy chủ CVAT có GPU hay serverless**: model chạy trên máy bạn, CVAT chỉ nhận kết quả. Dùng được với CVAT Docker trên mọi hệ điều hành, cả Mac.
 
 ```bash
 pip install -r requirements-cvat.txt
@@ -152,9 +185,6 @@ cvat-cli --server-host http://localhost --server-port 8080 --auth <tên-đăng-n
     task auto-annotate <TASK_ID> --function-file scripts/cvat_function_yolo26.py \
     -p size=str:m -p seg=bool:false --conf-threshold 0.3
 
-# cvat.ai
-cvat-cli --server-host https://app.cvat.ai --auth <tên-đăng-nhập> \
-    task auto-annotate <TASK_ID> --function-file scripts/cvat_function_yolo26.py -p size=str:m
 ```
 
 `<TASK_ID>` là số trong URL của Task (`/tasks/<ID>`). Mật khẩu: `cvat-cli` hỏi khi chạy, hoặc biến môi trường `PASS`; có thể dùng Personal Access Token qua `CVAT_ACCESS_TOKEN` (không ghi vào file trong repo).
@@ -174,21 +204,9 @@ Giới hạn của hàm mẫu: chỉ 6 lớp COCO, **không** có `three_wheeler
 
 ---
 
-## 7. Chạy CVAT trên máy bạn (Docker)
+## 7. Model AI trong CVAT Docker (nâng cao)
 
-Cần Docker Desktop (hoặc Docker Engine + compose), ~8 GB RAM trống.
-
-```bash
-git clone https://github.com/cvat-ai/cvat
-cd cvat
-git checkout v2.81.0
-docker compose up -d
-docker exec -it cvat_server bash -ic 'python3 ~/manage.py createsuperuser'
-```
-
-Mở http://localhost:8080 và đăng nhập bằng tài khoản vừa tạo. Dừng: `docker compose down` (dữ liệu giữ trong volume).
-
-Model AI trong CVAT Docker (B1/B2) cần thêm **serverless (Nuclio)**: xem hướng dẫn chính thức
+Cài CVAT: mục 0. Model AI trong CVAT Docker (B1/B2) cần thêm **serverless (Nuclio)**: xem hướng dẫn chính thức
 https://docs.cvat.ai/docs/administration/advanced/installation_automatic_annotation/ (cài `nuctl`, chạy compose có `docker-compose.serverless.yml`, deploy từng model từ thư mục `serverless/`).
 Trên **Mac Apple Silicon** các image Nuclio thường là amd64 và rất chậm hoặc lỗi: dùng cách A và B3.
 

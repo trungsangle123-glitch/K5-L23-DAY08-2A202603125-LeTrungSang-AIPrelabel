@@ -3,7 +3,7 @@
 Dùng với cvat-cli (cài từ requirements-cvat.txt):
 
   # chạy một lần trên một task đã tạo
-  cvat-cli --server-host https://app.cvat.ai --auth USER task auto-annotate <TASK_ID> \
+  cvat-cli --server-host http://localhost --server-port 8080 --auth USER task auto-annotate <TASK_ID> \
       --function-file scripts/cvat_function_yolo26.py -p size=str:m -p seg=bool:false --conf-threshold 0.3
 
   # hoặc đăng ký thành "model" trong CVAT rồi chạy agent (bấm Automatic annotation trên giao diện)
