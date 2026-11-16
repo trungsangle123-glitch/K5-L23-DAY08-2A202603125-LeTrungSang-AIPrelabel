@@ -1,5 +1,7 @@
 # Cài đặt môi trường (Part 0: làm TRƯỚC buổi học)
 
+> **Cách nhanh nhất:** mở **[setup_wizard.html](setup_wizard.html)** (tải file về rồi mở bằng trình duyệt). Chọn hệ điều hành (Windows, WSL2, Mac chip Apple, Mac Intel, Ubuntu), RAM (8 GB hay 16 GB trở lên) và CVAT; trang tự nhận diện máy, đề xuất chạy local hay Colab, rồi hiện từng bước kèm lệnh để copy. Trang này dưới đây là bản đọc.
+
 Mục tiêu: sau trang này, `python scripts/check_env.py` in **SẴN SÀNG** và bạn chạy được YOLO26 trên một ảnh.
 Mất khoảng 30–45 phút (phần lớn là chờ tải) nên **làm ở nhà trước buổi học**, không tính vào 4 giờ. Làm ở **thư mục gốc của repo**. Máy yếu: bỏ qua trang này, dùng [Google Colab](COLAB.md).
 

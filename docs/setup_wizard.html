@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cài đặt Day 08 (CPU)</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Concept: bảng điều khiển bên trái (cấu hình máy), hướng dẫn từng bước bên phải, giống một terminal có checklist.
+   Màu: slate nghiêng xanh, nhấn teal; trạng thái dùng màu ngữ nghĩa riêng. */
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --surface-2:#eef2f5; --line:#d9e0e6; --fg:#16202a; --muted:#5a6a78;
+  --accent:#0b7f78; --accent-fg:#ffffff; --accent-soft:#d9f0ee;
+  --code-bg:#0f1b24; --code-fg:#d6f2ee; --code-line:#223645;
+  --ok:#1f8a4c; --ok-soft:#dff3e6; --warn:#a15c00; --warn-soft:#fdeccb; --bad:#b42323; --bad-soft:#fbdcdc;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1318; --surface:#131d25; --surface-2:#1a2731; --line:#26373f; --fg:#e6edf2; --muted:#9bb0bd;
+  --accent:#3dc7bd; --accent-fg:#06201e; --accent-soft:#12413e;
+  --code-bg:#091016; --code-fg:#cdeee9; --code-line:#1d2f3b;
+  --ok:#52c982; --ok-soft:#143826; --warn:#f0b04a; --warn-soft:#3d2a0a; --bad:#ff8585; --bad-soft:#431a1a;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1318; --surface:#131d25; --surface-2:#1a2731; --line:#26373f; --fg:#e6edf2; --muted:#9bb0bd;
+  --accent:#3dc7bd; --accent-fg:#06201e; --accent-soft:#12413e;
+  --code-bg:#091016; --code-fg:#cdeee9; --code-line:#1d2f3b;
+  --ok:#52c982; --ok-soft:#143826; --warn:#f0b04a; --warn-soft:#3d2a0a; --bad:#ff8585; --bad-soft:#431a1a;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.55;
+  padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-size:clamp(1.5rem,3.2vw,2.1rem);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.05rem;margin:0;letter-spacing:.01em}
+h3{font-size:.98rem;margin:0}
+p{margin:0}
+.eyebrow{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.lede{color:var(--muted);max-width:64ch}
+header{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.sticky{position:sticky;top:12px}
+@media (max-width:900px){.sticky{position:static}}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.label{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;background:var(--surface-2);color:var(--fg);
+  border:1px solid transparent;border-radius:8px;padding:9px 11px;cursor:pointer;font:inherit}
+.opt:hover{border-color:var(--line)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt:focus-visible,.btn:focus-visible,summary:focus-visible,.copy:focus-visible,.chk:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dot{flex:none;width:16px;height:16px;border-radius:50%;border:2px solid var(--line);margin-top:3px;background:var(--surface)}
+.opt[aria-pressed="true"] .dot{border-color:var(--accent);background:radial-gradient(var(--accent) 0 42%,transparent 46%)}
+.opt b{display:block;font-weight:600;font-size:.92rem}
+.opt span.s{display:block;color:var(--muted);font-size:.8rem}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg .opt{align-items:center;justify-content:center;text-align:center}
+.btn{background:var(--accent);color:var(--accent-fg);border:0;border-radius:8px;padding:9px 13px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--surface-2);color:var(--fg);border:1px solid var(--line)}
+.detect{background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:.84rem;display:flex;flex-direction:column;gap:6px}
+.detect .row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--font-mono);font-size:.76rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted)}
+
+.verdict{border-radius:10px;padding:16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:start;border:1px solid var(--line);background:var(--surface)}
+.verdict .tag{grid-row:span 2;font-weight:700;font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 9px;border-radius:6px;white-space:nowrap}
+.verdict.colab .tag{background:var(--warn-soft);color:var(--warn)}
+.verdict.local .tag{background:var(--ok-soft);color:var(--ok)}
+.verdict h2{font-size:1.1rem}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.fact .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.fact .v{font-weight:600;font-size:.95rem;margin-top:2px;overflow-wrap:anywhere}
+.progress{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.prow{display:flex;justify-content:space-between;gap:10px;font-size:.84rem;color:var(--muted);align-items:center;flex-wrap:wrap}
+
+.steps{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0;overflow:hidden}
+.step.done{opacity:.72}
+.step-h{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
+.chk{flex:none;width:24px;height:24px;border-radius:6px;border:2px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center;color:transparent;font-weight:700;font-size:.9rem;padding:0;margin-top:1px}
+.step.done .chk{background:var(--ok);border-color:var(--ok);color:#fff}
+.step-h .t{flex:1;min-width:0}
+.step-h .t h3{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.badge{font-size:.72rem;font-weight:600;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:1px 8px}
+.step-h .t p{color:var(--muted);font-size:.88rem;margin-top:2px}
+.step-b{padding:0 16px 16px 52px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:560px){.step-b{padding-left:16px}}
+.codebox{position:relative;background:var(--code-bg);border:1px solid var(--code-line);border-radius:8px;min-width:0}
+.codebox .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--code-line);font-family:var(--font-mono);font-size:.7rem;color:#7fa6b3;text-transform:uppercase;letter-spacing:.08em}
+.copy{background:transparent;border:1px solid var(--code-line);color:#cdeee9;border-radius:6px;font:inherit;font-size:.72rem;padding:2px 9px;cursor:pointer;text-transform:none;letter-spacing:0}
+.copy:hover{border-color:#3dc7bd}
+pre{margin:0;padding:10px 12px;overflow-x:auto;font-family:var(--font-mono);font-size:.82rem;line-height:1.55;color:var(--code-fg);white-space:pre;tab-size:2}
+.note,.expect,.warnbox{border-radius:8px;padding:9px 12px;font-size:.88rem;display:flex;gap:10px}
+.note{background:var(--surface-2)}
+.expect{background:var(--ok-soft);color:var(--fg)}
+.warnbox{background:var(--warn-soft);color:var(--fg)}
+.note b,.expect b,.warnbox b{flex:none;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
+.expect b{color:var(--ok)} .warnbox b{color:var(--warn)} .note b{color:var(--muted)}
+code.i{font-family:var(--font-mono);font-size:.84em;background:var(--surface-2);border-radius:4px;padding:1px 5px}
+a{color:var(--accent)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--muted);font-weight:500}
+details[open] summary::after{content:"–"}
+details .in{padding:0 16px 14px;display:flex;flex-direction:column;gap:10px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:520px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+td code,th code{font-family:var(--font-mono);font-size:.84em}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+footer{color:var(--muted);font-size:.8rem;display:flex;flex-direction:column;gap:4px}
+@media (prefers-reduced-motion:reduce){.progress i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Day 08 · AI hỗ trợ gán nhãn</div>
+    <h1>Cài đặt cho máy yếu (chỉ CPU)</h1>
+    <p class="lede">Chọn cấu hình máy của bạn bên trái. Trang tự đề xuất cách chạy model và hiện từng bước cài đặt kèm lệnh để copy. Tick từng bước khi xong; tiến độ được nhớ trên trình duyệt này.</p>
+  </header>
+
+  <div class="grid">
+    <aside class="panel sticky" aria-label="Cấu hình máy">
+      <div class="field">
+        <div class="label">1. Hệ điều hành</div>
+        <div class="opts" id="os-opts" role="group" aria-label="Hệ điều hành"></div>
+      </div>
+      <div class="field">
+        <div class="label">2. RAM</div>
+        <div class="seg" id="ram-opts" role="group" aria-label="RAM"></div>
+      </div>
+      <div class="field">
+        <div class="label">3. CVAT</div>
+        <div class="seg" id="cvat-opts" role="group" aria-label="CVAT"></div>
+      </div>
+      <div class="field">
+        <div class="label">Tự nhận diện</div>
+        <div class="detect" id="detect"></div>
+        <div class="toolbar"><button class="btn ghost" id="redetect" type="button">Nhận diện lại</button></div>
+      </div>
+    </aside>
+
+    <main style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section id="verdict" class="verdict" aria-live="polite"></section>
+      <section class="facts" id="facts" aria-label="Thông số dự kiến"></section>
+
+      <section class="panel" style="gap:10px">
+        <div class="sec-h"><h2>Lộ trình cài đặt</h2><div class="toolbar"><button class="btn ghost" id="plan-toggle" type="button"></button><button class="btn ghost" id="reset" type="button">Xoá tiến độ</button></div></div>
+        <div class="prow"><span id="ptext"></span><span id="ptime"></span></div>
+        <div class="progress" aria-hidden="true"><i id="pbar"></i></div>
+      </section>
+
+      <ol class="steps" id="steps"></ol>
+
+      <section style="display:flex;flex-direction:column;gap:10px">
+        <h2>Lệnh chạy lab theo cấu hình của bạn</h2>
+        <div class="panel" id="flags"></div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:10px">
+        <h2>Gặp lỗi?</h2>
+        <div id="trouble" style="display:flex;flex-direction:column;gap:8px"></div>
+      </section>
+
+      <footer>
+        <span>Thời gian và dung lượng là ước lượng trên máy tham chiếu, thay đổi theo tốc độ mạng và đời máy.</span>
+        <span>Các lệnh cài PyTorch cho Mac Intel và việc chạy WSL2 chưa được giảng viên thử trên máy thật; nếu lỗi, chuyển sang phương án Colab.</span>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var REPO='https://github.com/VinUni-AI20k/K5-L23-Day08-AI-Assisted-Labeling';
+var COLAB='https://colab.research.google.com/github/VinUni-AI20k/K5-L23-Day08-AI-Assisted-Labeling/blob/main/notebooks/day08_colab.ipynb';
+
+var OS=[
+ {id:'win',  n:'Windows 10/11',            s:'PowerShell, không dùng WSL'},
+ {id:'wsl',  n:'Windows + WSL2 (Ubuntu)',  s:'Chạy lab trong Ubuntu trên Windows'},
+ {id:'macm', n:'macOS chip Apple (M1, M2, M3, M4)', s:'MacBook, Mac mini, iMac đời 2020 trở lại đây'},
+ {id:'maci', n:'macOS chip Intel',         s:'MacBook đời 2019 trở về trước'},
+ {id:'lin',  n:'Ubuntu / Linux',           s:'Ubuntu 22.04 hoặc 24.04, Debian'}
+];
+var RAM=[{id:'8',n:'8 GB trở xuống'},{id:'16',n:'16 GB trở lên'}];
+var CVAT=[{id:'cloud',n:'cvat.ai (web)'},{id:'docker',n:'Docker trên máy'}];
+
+var S={os:null,ram:null,cvat:'cloud',plan:null,planUser:false,done:{}};
+function load(){try{var j=JSON.parse(localStorage.getItem('d8setup')||'{}');['os','ram','cvat','plan','planUser'].forEach(function(k){if(j[k]!==undefined&&j[k]!==null)S[k]=j[k]});S.done=j.done||{};}catch(e){}}
+function save(){try{localStorage.setItem('d8setup',JSON.stringify(S));}catch(e){}}
+load();
+
+/* ---------- nhận diện ---------- */
+var DET={os:null,ram:null,cores:null,note:[],mem:null};
+function detect(){
+  var ua=navigator.userAgent||'', pf=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'';
+  var gl='';
+  try{var c=document.createElement('canvas');var g=c.getContext('webgl')||c.getContext('experimental-webgl');
+    if(g){var e=g.getExtension('WEBGL_debug_renderer_info');gl=e?String(g.getParameter(e.UNMASKED_RENDERER_WEBGL)):'';}}catch(e){}
+  var os=null,label='không rõ';
+  if(/Win/i.test(pf)||/Windows/i.test(ua)){os='win';label='Windows';}
+  else if(/Mac/i.test(pf)||/Macintosh/i.test(ua)){
+    if(/Apple (M\d|GPU)/i.test(gl)){os='macm';label='macOS, chip Apple';}
+    else if(/Intel/i.test(gl)){os='maci';label='macOS, chip Intel';}
+    else{os=null;label='macOS (không phân biệt được chip)';}
+  }else if(/Linux|X11|CrOS/i.test(pf+ua)&&!/Android/i.test(ua)){os='lin';label='Linux';}
+  else if(/Android|iPhone|iPad/i.test(ua)){label='điện thoại / máy tính bảng: hãy mở trang này trên máy sẽ cài';}
+  var mem=navigator.deviceMemory||null, ram=null;
+  if(mem!==null){ if(mem<8) ram='8'; }
+  DET={os:os,label:label,ram:ram,mem:mem,cores:navigator.hardwareConcurrency||null,gl:gl};
+  return DET;
+}
+function renderDetect(){
+  var d=DET, el=document.getElementById('detect'), h='';
+  h+='<div><b>Hệ điều hành:</b> '+esc(d.label)+'</div>';
+  var chips=[];
+  if(d.cores) chips.push(d.cores+' luồng CPU');
+  if(d.mem!==null) chips.push(d.mem>=8?'RAM báo: 8 GB (trình duyệt không báo cao hơn)':'RAM báo: '+d.mem+' GB');
+  else chips.push('RAM: trình duyệt không cung cấp');
+  if(d.gl) chips.push('GPU: '+d.gl.slice(0,38));
+  h+='<div class="row">'+chips.map(function(c){return '<span class="chip">'+esc(c)+'</span>'}).join('')+'</div>';
+  h+='<div style="color:var(--muted)">Trình duyệt không nhìn thấy WSL, và Chrome luôn báo RAM tối đa 8 GB. Nếu máy có từ 16 GB, hãy tự chọn bên trên.</div>';
+  el.innerHTML=h;
+}
+function applyDetect(force){
+  if(DET.os&&(!S.os||force)) S.os=DET.os;
+  if(DET.ram&&(!S.ram||force)) S.ram=DET.ram;
+}
+
+/* ---------- kế hoạch đề xuất ---------- */
+function recommend(){
+  var why=[];
+  if(!S.os||!S.ram) return {plan:null,why:[]};
+  if(S.os==='maci'){return {plan:'colab',why:['PyTorch bản mới không còn bản dựng cho Mac Intel, nên cài local rất dễ vỡ.']};}
+  if(S.ram==='8'){return {plan:'colab',why:['Với 8 GB RAM, chạy 3 model bằng CPU rất chậm và dễ hết bộ nhớ, nhất là khi mở thêm trình duyệt với CVAT.']};}
+  if(S.os==='wsl'||S.os==='win'){return {plan:'local',why:['16 GB RAM đủ chạy model cỡ nhỏ bằng CPU. Mỗi ảnh mất vài giây.']};}
+  return {plan:'local',why:['16 GB RAM đủ chạy model cỡ nhỏ bằng CPU. Mỗi ảnh mất vài giây.']};
+}
+function curPlan(){var r=recommend();if(S.planUser&&S.plan) return S.plan; return r.plan;}
+
+/* ---------- dữ liệu bước ---------- */
+function shellOf(){return S.os==='win'?'powershell':(S.os==='macm'||S.os==='maci')?'zsh':'bash';}
+function venvAct(){return S.os==='win'?'.venv\\Scripts\\Activate.ps1':'source .venv/bin/activate';}
+function pyBin(){return S.os==='win'?'py -3.12':(S.os==='macm'||S.os==='maci')?'python3.12':'python3';}
+function cloneCmd(){return 'git clone https://github.com/<tên-GitHub-của-bạn>/<tên-repo-của-bạn>.git\ncd <tên-repo-của-bạn>';}
+
+function stepsFor(){
+  var os=S.os, plan=curPlan(), ram=S.ram, st=[];
+  var lin=(os==='wsl'||os==='lin'), mac=(os==='macm'||os==='maci');
+
+  /* 0. WSL */
+  if(os==='wsl'){
+    st.push({id:'wsl-install',t:'Bật WSL2 và cài Ubuntu',time:'10–20 phút, cần khởi động lại',why:'WSL2 cho bạn một Ubuntu thật chạy trong Windows. Phần còn lại làm trong cửa sổ Ubuntu.',
+      b:[{k:'cmd',l:'powershell (chạy bằng Run as administrator)',c:'wsl --install -d Ubuntu-24.04\n# khởi động lại máy khi được yêu cầu, rồi mở "Ubuntu" từ Start menu và tạo tên người dùng + mật khẩu'},
+         {k:'expect',c:'Chạy wsl -l -v trong PowerShell thấy Ubuntu-24.04 ở cột VERSION là 2.'},
+         {k:'note',c:'Nếu lệnh báo "virtualization is disabled", bật Virtualization (SVM / VT-x) trong BIOS rồi thử lại.'}]});
+    var mem=ram==='8'?'memory=5GB\nprocessors=4\nswap=8GB':'memory=10GB\nprocessors=6\nswap=8GB';
+    st.push({id:'wsl-config',t:'Giới hạn RAM cho WSL',time:'3 phút',why:'Mặc định WSL lấy tới một nửa RAM và hay làm Windows giật. Đặt trần rõ ràng.',
+      b:[{k:'cmd',l:'powershell',c:'notepad $env:USERPROFILE\\.wslconfig'},
+         {k:'cmd',l:'nội dung file .wslconfig (dán, rồi Save)',c:'[wsl2]\n'+mem},
+         {k:'cmd',l:'powershell',c:'wsl --shutdown'},
+         {k:'note',c:'Các lệnh dưới đây gõ trong cửa sổ Ubuntu (không phải PowerShell), và để mã nguồn trong thư mục home của Ubuntu (~), đừng để ở /mnt/c vì rất chậm.'}]});
+  }
+
+  /* 1. công cụ nền */
+  if(os==='win'){
+    st.push({id:'tools',t:'Cài Python 3.12, Git và thư viện nền Visual C++',time:'5–10 phút',why:'Lab cần Python 3.10–3.12 (bản 3.13 trở lên chưa có thư viện tương thích), Git để clone repo, và Visual C++ Runtime để PyTorch chạy.',
+      b:[{k:'cmd',l:'powershell',c:'winget install -e --id Python.Python.3.12\nwinget install -e --id Git.Git\nwinget install -e --id Microsoft.VCRedist.2015+.x64'},
+         {k:'note',c:'Đóng và mở lại PowerShell sau khi cài. Không có winget? Tải Python 3.12 tại python.org (tick "Add python.exe to PATH") và Git tại git-scm.com.'},
+         {k:'cmd',l:'powershell (kiểm tra)',c:'py -3.12 --version\ngit --version'},
+         {k:'expect',c:'In ra Python 3.12.x và git version 2.x. Nếu py không tìm thấy bản 3.12, cài lại Python 3.12.'}]});
+  }
+  if(lin){
+    st.push({id:'tools',t:'Cài Python, venv, Git và công cụ build',time:'3–5 phút',why:'Ubuntu có sẵn Python nhưng thiếu venv và công cụ build mà vài thư viện cần.',
+      b:[{k:'cmd',l:'bash',c:'sudo apt update\nsudo apt install -y python3 python3-venv python3-pip git build-essential'},
+         {k:'cmd',l:'bash (kiểm tra)',c:'python3 --version\ngit --version'},
+         {k:'expect',c:'Python từ 3.10 đến 3.12 là ổn (Ubuntu 22.04 có 3.10, 24.04 có 3.12). Nếu thấy 3.13 trở lên, cài thêm 3.12 bằng deadsnakes hoặc dùng Colab.'}]});
+  }
+  if(mac){
+    st.push({id:'tools',t:'Cài công cụ dòng lệnh, Homebrew, Python 3.12 và Git',time:'10–15 phút',why:'macOS cần Command Line Tools và Homebrew để cài Python đúng phiên bản.',
+      b:[{k:'cmd',l:'terminal',c:'xcode-select --install'},
+         {k:'cmd',l:'terminal (bỏ qua nếu đã có brew)',c:'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'},
+         {k:'cmd',l:'terminal',c:'brew install python@3.12 git\npython3.12 --version'},
+         {k:'expect',c:'In ra Python 3.12.x.'}]});
+  }
+
+  /* 2. clone */
+  st.push({id:'clone',t:'Fork và clone repo của bạn',time:'3 phút',why:'Mỗi bạn làm trên repo công khai của riêng mình. Nhấn Fork trên GitHub trước, rồi clone bản fork.',
+    b:[{k:'note',c:'Mở '+REPO+' → Fork → đặt tên theo SUBMISSION.md (ví dụ K5-L23-DAY08-22001234-NguyenVanA-AIPrelabel), để Public.'},
+       {k:'cmd',l:shellOf(),c:cloneCmd()+'\ngit config user.name "Họ và tên của bạn"\ngit config user.email "email-gắn-tài-khoản-GitHub"'}]});
+
+  if(plan==='local'){
+    /* 3. venv */
+    st.push({id:'venv',t:'Tạo môi trường ảo Python',time:'1 phút',why:'Môi trường ảo giữ thư viện của lab tách khỏi Python hệ thống.',
+      b:[{k:'cmd',l:shellOf(),c:pyBin()+' -m venv .venv\n'+venvAct()+'\npython -m pip install -U pip'},
+         (os==='win'?{k:'warn',c:'Nếu PowerShell báo "running scripts is disabled", chạy Set-ExecutionPolicy -Scope CurrentUser RemoteSigned rồi kích hoạt lại.'}:{k:'note',c:'Mỗi lần mở terminal mới phải kích hoạt lại venv (dòng source / Activate). Dấu hiệu đúng: đầu dòng lệnh có (.venv).'}),
+         {k:'expect',c:'Đầu dòng lệnh có (.venv). Lệnh python --version cho 3.12.x (hoặc 3.10/3.11 trên Ubuntu).'}]});
+    /* 4. torch */
+    if(os==='maci'){
+      st.push({id:'torch',t:'Cài PyTorch bản cuối còn hỗ trợ Mac Intel',time:'5–10 phút',why:'PyTorch mới không còn bản cho Mac Intel; chỉ còn dòng 2.2. Đây là đường dễ lỗi nhất.',
+        b:[{k:'cmd',l:'terminal (đã kích hoạt venv)',c:'pip install "torch==2.2.2" "torchvision==0.17.2" "numpy<2"'},
+           {k:'warn',c:'Cách này chưa được kiểm chứng với ultralytics bản mới. Nếu bước kế tiếp lỗi, dừng lại và dùng phương án Colab (nút "Đổi sang Colab" ở trên).'}]});
+    }else if(mac){
+      st.push({id:'torch',t:'PyTorch đi kèm trong requirements (không cần bước riêng)',time:'0 phút',why:'Trên Mac, pip tải đúng bản PyTorch có sẵn tăng tốc Apple (MPS). Bạn chỉ cần bước kế tiếp.',b:[{k:'note',c:'Bạn muốn chạy thuần CPU? Thêm --device cpu vào các lệnh prelabel.py. Mặc định script tự chọn MPS nếu có.'}]});
+    }else{
+      st.push({id:'torch',t:'Cài PyTorch bản CPU',time:'3–6 phút (~200 MB)',why:'Bản mặc định trên pip kèm thư viện CUDA nặng hàng GB mà máy không GPU không dùng. Bản CPU nhẹ hơn nhiều.',
+        b:[{k:'cmd',l:shellOf()+' (đã kích hoạt venv)',c:'pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu'},
+           {k:'expect',c:'Kết thúc bằng Successfully installed torch-... (có đuôi +cpu).'}]});
+    }
+    /* 5. requirements */
+    var reqCmd=(os==='maci')?'pip install ultralytics opencv-python-headless pillow matplotlib pyyaml huggingface_hub':'pip install -r requirements.txt';
+    st.push({id:'req',t:'Cài thư viện của lab',time:'5–10 phút',why:'Gồm ultralytics (YOLO26, YOLOE, SAM), OpenCV, matplotlib...',
+      b:[{k:'cmd',l:shellOf()+' (đã kích hoạt venv)',c:reqCmd},
+         (os==='maci'?{k:'note',c:'Mac Intel bỏ qua transformers (chỉ dùng cho bài nâng cao).'}:{k:'note',c:'Lần chạy YOLOE đầu tiên sẽ tự cài thêm CLIP từ GitHub, cần Git và mạng.'})]});
+    /* 6. models */
+    var set=ram==='8'?'small':'core';
+    st.push({id:'models',t:'Tải trọng số model',time:'3–10 phút theo mạng',why:'Bài chính chỉ dùng 3 model. Máy yếu dùng bản nhỏ để chạy nhanh.',
+      b:[{k:'cmd',l:shellOf()+' (đã kích hoạt venv)',c:'python scripts/download_models.py --set '+set+(ram==='8'?'\npython scripts/download_models.py --set sam1':'')},
+         {k:'note',c:ram==='8'?'Bộ small: YOLO26n, YOLOE-26s, SAM 2.1 tiny (~0.15 GB), thêm SAM 1 mobile_sam (~40 MB) làm phương án dự phòng.':'Bộ core: YOLO26m, YOLOE-26s, SAM 2.1 base (~0.35 GB). Chạy CPU sẽ chậm hơn bản n; nếu thấy chậm, đổi sang --set small.'},
+         {k:'expect',c:'Mỗi file in OK, và thư mục models/ có các file .pt.'}]});
+    /* 7. check */
+    var sz=ram==='8'?'n':'s';
+    st.push({id:'check',t:'Kiểm tra môi trường và chạy thử một ảnh',time:'2–5 phút',why:'Xác nhận mọi thứ chạy trước khi vào buổi học.',
+      b:[{k:'cmd',l:shellOf()+' (đã kích hoạt venv)',c:'python scripts/check_env.py\npython scripts/prelabel.py --model yolo26 --size '+sz+' --images img_011.jpg --conf 0.3 --imgsz 640 --device cpu --out work/smoke'},
+         {k:'expect',c:'check_env in "SẴN SÀNG". Lệnh thứ hai in "Số box theo lớp: person=..., motorbike=..." và tạo work/smoke/viz/img_011.jpg (mở ra thấy box chồng lên ảnh).'},
+         {k:'note',c:'Mục "HuggingFace token" báo WARN là bình thường (chỉ cần cho SAM 3, không bắt buộc).'}]});
+  }else{
+    /* Colab path */
+    st.push({id:'venv',t:'Tạo môi trường ảo Python (phần nhẹ)',time:'1 phút',why:'Trên máy bạn chỉ chạy các script đo và kiểm tra. Model nặng chạy trên Colab.',
+      b:[{k:'cmd',l:shellOf(),c:pyBin()+' -m venv .venv\n'+venvAct()+'\npython -m pip install -U pip\npip install -r requirements-local.txt'},
+         {k:'note',c:'Không cài torch hay ultralytics ở máy. check_env.py sẽ báo FAIL ở các mục đó, đó là bình thường.'},
+         {k:'expect',c:'pip kết thúc bằng Successfully installed numpy pillow opencv-python-headless matplotlib pyyaml.'}]});
+    st.push({id:'colab',t:'Mở notebook Colab và bật GPU',time:'5 phút',why:'Colab cho GPU T4 miễn phí; model chạy ở đó rồi bạn tải file nhãn về.',
+      b:[{k:'link',l:'Mở notebook Colab của lab',h:COLAB},
+         {k:'note',c:'Cần tài khoản Google. Vào Runtime → Change runtime type → T4 GPU → Save. Chạy lần lượt các ô từ trên xuống (Shift+Enter).'},
+         {k:'expect',c:'Ô đầu in tên GPU (Tesla T4). Ô cài đặt chạy xong không lỗi đỏ.'}]});
+    st.push({id:'colab-models',t:'Tải model trong Colab',time:'3–5 phút',why:'Colab tải 3 model nhanh hơn đường truyền ở nhà.',
+      b:[{k:'note',c:'Ô "Tải trọng số" của notebook đã có sẵn lệnh. Chạy ô đó. SAM là bắt buộc: bỏ comment dòng --set sam1 nếu muốn SAM 1.'},
+         {k:'warn',c:'Phiên Colab bị xoá khi hết giờ. Sau mỗi Part, tải colab_outputs.zip về máy.'}]});
+    st.push({id:'unzip',t:'Giải nén kết quả vào repo trên máy',time:'1 phút (mỗi lần)',why:'Các script đo và CVAT dùng file nhãn nằm trong thư mục work/ của repo.',
+      b:[(os==='win'?{k:'cmd',l:'powershell (trong thư mục gốc repo)',c:'Expand-Archive "$env:USERPROFILE\\Downloads\\colab_outputs.zip" -DestinationPath . -Force'}
+         :{k:'cmd',l:shellOf()+' (trong thư mục gốc repo)',c:'unzip -o ~/Downloads/colab_outputs.zip -d .'}),
+         {k:'expect',c:'Thư mục work/prelabel/ xuất hiện cạnh scripts/.'}]});
+  }
+
+  /* CVAT */
+  if(S.cvat==='cloud'){
+    st.push({id:'cvat',t:'Tạo tài khoản cvat.ai và Project',time:'10 phút',why:'Bản web miễn phí, không cần cài gì thêm trên máy.',
+      b:[{k:'link',l:'Mở cvat.ai',h:'https://app.cvat.ai'},
+         {k:'note',c:'Đăng ký, vào Projects → Create new project. Ở mục Labels chọn tab Raw, dán toàn bộ nội dung file cvat/labels_generated.json trong repo, bấm Done rồi Submit & Open.'},
+         {k:'expect',c:'Project có 8 nhãn: person, bicycle, motorbike, car, bus, truck, three_wheeler, ignore_region.'},
+         {k:'warn',c:'Gói miễn phí có thể giới hạn một số tính năng AI. Bài chính chỉ cần Upload annotations nên không ảnh hưởng.'}]});
+  }else{
+    st.push({id:'cvat',t:'Chạy CVAT bằng Docker trên máy',time:'20–30 phút',why:'Chỉ nên làm khi máy có từ 16 GB RAM còn trống. Tốn khoảng 8 GB RAM khi chạy.',
+      b:[{k:'warn',c:ram==='8'?'Máy 8 GB không nên chạy CVAT Docker cùng lúc với model. Hãy chọn cvat.ai.':'Cần Docker Desktop đang chạy'+(os==='win'?' (bật tuỳ chọn WSL2 backend)':'')+'.'},
+         {k:'cmd',l:shellOf(),c:'git clone https://github.com/cvat-ai/cvat\ncd cvat\ngit checkout v2.81.0\ndocker compose up -d\ndocker exec -it cvat_server bash -ic \'python3 ~/manage.py createsuperuser\''},
+         {k:'expect',c:'Mở http://localhost:8080 và đăng nhập bằng tài khoản vừa tạo. Sau đó tạo Project như hướng dẫn cvat.ai ở trên.'}]});
+  }
+  if(os==='wsl'){
+    st[st.length-1].b.push({k:'note',c:'Cần đưa ảnh từ WSL lên CVAT trong trình duyệt Windows? Từ cửa sổ Ubuntu chạy: explorer.exe work/tasks/gold, rồi kéo thả ảnh vào CVAT.'});
+  }
+  return st;
+}
+
+/* ---------- lệnh theo cấu hình ---------- */
+function flagsView(){
+  var ram=S.ram, plan=curPlan();
+  var size=ram==='8'?'n':'s', sam=ram==='8'?'mobile_sam.pt':'sam2.1_b.pt', img=ram==='8'?'640':'800';
+  var h='';
+  if(plan==='colab'){
+    h+='<p>Model chạy trên Colab (GPU), nên bạn dùng đúng lệnh trong tài liệu, kích cỡ <code class="i">m</code> được. Trên máy bạn chỉ chạy các script đo, không cần cờ CPU.</p>';
+  }else{
+    h+='<p>Thêm các cờ này vào mọi lệnh <code class="i">prelabel.py</code> để chạy được trên CPU:</p>';
+    h+='<div class="tbl"><table><thead><tr><th>Cờ</th><th>Giá trị cho máy của bạn</th><th>Vì sao</th></tr></thead><tbody>'+
+      '<tr><td><code>--size</code></td><td><code>'+size+'</code></td><td>Cỡ model YOLO: n nhỏ nhất, nhanh nhất</td></tr>'+
+      '<tr><td><code>--imgsz</code></td><td><code>'+img+'</code></td><td>Ảnh vào model nhỏ hơn thì nhanh hơn, nhưng bỏ sót vật nhỏ</td></tr>'+
+      '<tr><td><code>--sam</code></td><td><code>'+sam+'</code></td><td>Phiên bản SAM nhẹ cho CPU</td></tr>'+
+      '<tr><td><code>--device</code></td><td><code>cpu</code></td><td>Tránh script tự chọn nhầm thiết bị</td></tr>'+
+      '</tbody></table></div>';
+    h+=cmdBox(shellOf(),'python scripts/prelabel.py --model yolo26 --size '+size+' --split pilot --conf 0.25 --imgsz '+img+' --device cpu --out work/prelabel/t_y26\n'+
+      'python scripts/prelabel.py --model yoloe --classes three_wheeler --split pilot --conf 0.25 --imgsz '+img+' --device cpu --out work/prelabel/t_yoloe\n'+
+      'python scripts/prelabel.py --model yolo26 --size '+size+' --classes person,motorbike,car --images img_004.jpg img_013.jpg --conf 0.3 --imgsz '+img+' --device cpu --segmenter sam --sam '+sam+' --out work/prelabel/t_sam');
+    h+='<div class="note"><b>Mẹo</b><span>Chạy từng model một, đóng bớt trình duyệt khi chạy. Chạy mọi ảnh (<code class="i">--split all</code>) mất vài phút trên CPU: để máy chạy trong lúc bạn làm việc khác.'+(S.os==='win'?' Trên PowerShell, giá trị có dấu phẩy phải đặt trong nháy kép, ví dụ <code class="i">--classes "person,motorbike,car"</code>.':'')+'</span></div>';
+  }
+  return h;
+}
+
+/* ---------- xử lý lỗi ---------- */
+function troubleFor(){
+  var os=S.os, T=[];
+  T.push(['Lệnh pip báo "No matching distribution found for torch"','Python của bạn là 3.13 trở lên hoặc không đúng kiến trúc. Tạo lại venv bằng Python 3.12, rồi cài lại.']);
+  T.push(['Lỗi khi YOLOE tải CLIP ("git+https://github.com/ultralytics/CLIP.git")','Máy chưa có Git hoặc mạng chặn GitHub. Cài Git, hoặc dùng mạng khác. Có thể chạy tạm bằng: pip install git+https://github.com/ultralytics/CLIP.git rồi chạy lại.']);
+  T.push(['Chạy rất chậm hoặc máy đơ','Đổi --size n, --imgsz 640, --sam mobile_sam.pt, đóng trình duyệt, chạy từng model một. Vẫn chậm thì chuyển sang Colab.']);
+  T.push(['Hết bộ nhớ (Killed, MemoryError)','Giảm --imgsz, chạy từng ảnh với --images, hoặc dùng Colab. Máy 8 GB không nên mở CVAT Docker cùng lúc.']);
+  if(os==='win'){
+    T.push(['PowerShell: "running scripts is disabled on this system"','Chạy Set-ExecutionPolicy -Scope CurrentUser RemoteSigned, chọn Y, rồi kích hoạt venv lại.']);
+    T.push(['PowerShell tách dấu phẩy, argparse báo lỗi','Đặt giá trị trong nháy kép: --split "batch,gold". Hoặc dùng Git Bash / WSL để chạy y nguyên lệnh trong tài liệu.']);
+    T.push(['ImportError: DLL load failed khi import torch','Cài Microsoft Visual C++ Redistributable: winget install -e --id Microsoft.VCRedist.2015+.x64, rồi mở lại PowerShell.']);
+    T.push(['Đường dẫn dài / ký tự lạ làm pip lỗi','Để repo ở thư mục ngắn, không dấu, ví dụ C:\\labs\\day08, không để trong OneDrive.']);
+  }
+  if(os==='wsl'){
+    T.push(['WSL rất chậm khi đọc file','Bạn đang để repo ở /mnt/c. Chuyển vào thư mục home của Ubuntu (~/day08) và clone ở đó.']);
+    T.push(['Windows đơ khi chạy model','WSL đang ăn hết RAM. Kiểm tra file .wslconfig (memory=5GB cho máy 8 GB), rồi wsl --shutdown.']);
+    T.push(['wsl --install báo lỗi virtualization','Bật Virtualization trong BIOS, và bật tính năng Virtual Machine Platform trong Windows Features.']);
+  }
+  if(os==='macm'){
+    T.push(['Lỗi MPS (dtype, out of memory)','Chạy với PYTORCH_ENABLE_MPS_FALLBACK=1 phía trước lệnh, hoặc thêm --device cpu.']);
+    T.push(['xcode-select: command line tools đã được cài','Không sao, bỏ qua và làm bước kế tiếp.']);
+  }
+  if(os==='maci'){
+    T.push(['Cài torch 2.2.2 xong nhưng ultralytics báo lỗi phiên bản','Đây là giới hạn của Mac Intel. Chuyển sang Colab (nút "Đổi sang Colab").']);
+  }
+  if(os==='lin'||os==='wsl'){
+    T.push(['"No module named venv" hoặc "ensurepip is not available"','Chạy: sudo apt install -y python3-venv rồi tạo lại venv.']);
+    T.push(['Lỗi libGL / libglib khi import cv2','Dùng opencv-python-headless (đã có trong requirements). Nếu vẫn lỗi: sudo apt install -y libglib2.0-0 libgl1.']);
+  }
+  T.push(['check_env báo HuggingFace token WARN','Bình thường. Token chỉ cần cho SAM 3 (bài nâng cao).']);
+  return T;
+}
+
+/* ---------- hiển thị ---------- */
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var cmdN=0;
+function cmdBox(label,text){var id='c'+(++cmdN);
+  return '<div class="codebox"><div class="bar"><span>'+esc(label||'')+'</span><button class="copy" type="button" data-copy="'+id+'">Copy</button></div><pre id="'+id+'">'+esc(text)+'</pre></div>';}
+function block(b){
+  if(b.k==='cmd') return cmdBox(b.l,b.c);
+  if(b.k==='note') return '<div class="note"><b>Ghi chú</b><span>'+esc(b.c)+'</span></div>';
+  if(b.k==='expect') return '<div class="expect"><b>Kết quả đúng</b><span>'+esc(b.c)+'</span></div>';
+  if(b.k==='warn') return '<div class="warnbox"><b>Lưu ý</b><span>'+esc(b.c)+'</span></div>';
+  if(b.k==='link') return '<div><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="'+esc(b.h)+'">'+esc(b.l)+'</a></div>';
+  return '';
+}
+function opts(el,list,key,cls){
+  el.innerHTML=list.map(function(o){
+    var on=S[key]===o.id;
+    return '<button type="button" class="opt" data-k="'+key+'" data-v="'+o.id+'" aria-pressed="'+on+'">'+(cls==='seg'?'':'<span class="dot"></span>')+'<span><b>'+esc(o.n)+'</b>'+(o.s?'<span class="s">'+esc(o.s)+'</span>':'')+'</span></button>';
+  }).join('');
+}
+function render(){
+  opts(document.getElementById('os-opts'),OS,'os');
+  opts(document.getElementById('ram-opts'),RAM,'ram','seg');
+  opts(document.getElementById('cvat-opts'),CVAT,'cvat','seg');
+  renderDetect();
+  var rec=recommend(), plan=curPlan();
+  var v=document.getElementById('verdict'), f=document.getElementById('facts'), st=document.getElementById('steps');
+  if(!S.os||!S.ram){
+    v.className='verdict'; v.innerHTML='<div class="tag" style="background:var(--surface-2);color:var(--muted)">Chờ chọn</div><h2>Chọn hệ điều hành và RAM</h2><p style="color:var(--muted)">'+(!S.os?'Chưa xác định được hệ điều hành. ':'')+(!S.ram?'Trình duyệt không biết RAM của bạn: hãy chọn 8 GB hoặc 16 GB trở lên.':'')+'</p>';
+    f.innerHTML=''; st.innerHTML=''; document.getElementById('flags').innerHTML='<p style="color:var(--muted)">Chọn cấu hình để xem.</p>';
+    document.getElementById('trouble').innerHTML=''; document.getElementById('ptext').textContent=''; document.getElementById('ptime').textContent=''; document.getElementById('pbar').style.width='0';
+    document.getElementById('plan-toggle').hidden=true; return;
+  }
+  document.getElementById('plan-toggle').hidden=false;
+  var local=(plan==='local');
+  v.className='verdict '+(local?'local':'colab');
+  v.innerHTML='<div class="tag">'+(local?'Chạy local':'Dùng Colab')+'</div><h2>'+(local?'Chạy model trực tiếp trên máy bằng CPU':'Chạy model trên Google Colab, còn lại làm trên máy')+'</h2><p style="color:var(--muted)">'+esc(rec.why.join(' '))+(S.planUser&&S.plan!==rec.plan?' Bạn đã chọn khác với đề xuất.':'')+'</p>';
+  var model=local?(S.ram==='8'?'YOLO26n, YOLOE-26s, SAM 2.1 tiny':'YOLO26m, YOLOE-26s, SAM 2.1 base'):'3 model chạy trên Colab T4';
+  f.innerHTML=[['Cài trên máy',local?'~6 GB ổ đĩa, 30–45 phút':'~1 GB ổ đĩa, 10–15 phút'],['Model',model],['Tốc độ mỗi ảnh',local?(S.ram==='8'?'~2–6 giây (n, 640 px)':'~3–10 giây (s, 800 px)'):'<1 giây (GPU Colab)'],['CVAT',S.cvat==='cloud'?'cvat.ai, không cài thêm':'Docker, ~8 GB RAM']].map(function(x){return '<div class="fact"><div class="k">'+x[0]+'</div><div class="v">'+esc(x[1])+'</div></div>'}).join('');
+  var pt=document.getElementById('plan-toggle'); pt.textContent=local?'Đổi sang Colab':'Đổi sang chạy local';
+  var steps=stepsFor(); cmdN=0;
+  st.innerHTML=steps.map(function(s,i){
+    var d=!!S.done[s.id];
+    return '<li class="step'+(d?' done':'')+'" data-id="'+s.id+'"><div class="step-h"><button type="button" class="chk" data-step="'+s.id+'" aria-label="Đánh dấu xong bước '+(i+1)+'" aria-pressed="'+d+'">✓</button><div class="t"><h3><span>Bước '+(i+1)+'. '+esc(s.t)+'</span><span class="badge">'+esc(s.time)+'</span></h3><p>'+esc(s.why)+'</p></div></div><div class="step-b">'+s.b.map(block).join('')+'</div></li>';
+  }).join('');
+  updateProgress(steps);
+  document.getElementById('flags').innerHTML=flagsView();
+  document.getElementById('trouble').innerHTML=troubleFor().map(function(t){return '<details><summary>'+esc(t[0])+'</summary><div class="in"><p>'+esc(t[1])+'</p></div></details>'}).join('');
+}
+function updateProgress(steps){
+  var n=steps.length, d=steps.filter(function(s){return S.done[s.id]}).length;
+  document.getElementById('ptext').textContent=d+' / '+n+' bước xong';
+  document.getElementById('ptime').textContent=d===n?'Sẵn sàng cho buổi học':'';
+  document.getElementById('pbar').style.width=(n?Math.round(d/n*100):0)+'%';
+}
+
+/* ---------- sự kiện ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button,a'); if(!t) return;
+  if(t.dataset.k){
+    S[t.dataset.k]=t.dataset.v;
+    if(t.dataset.k!=='cvat'){S.planUser=false;S.plan=null;}
+    save();render();return;
+  }
+  if(t.dataset.step){
+    var id=t.dataset.step; S.done[id]=!S.done[id]; save();
+    var li=t.closest('.step'); li.classList.toggle('done',!!S.done[id]); t.setAttribute('aria-pressed',!!S.done[id]);
+    updateProgress(stepsFor()); return;
+  }
+  if(t.dataset.copy){
+    var pre=document.getElementById(t.dataset.copy), txt=pre.textContent;
+    var ok=function(){t.textContent='Đã copy';setTimeout(function(){t.textContent='Copy'},1400)};
+    var fb=function(){var r=document.createRange();r.selectNodeContents(pre);var s=window.getSelection();s.removeAllRanges();s.addRange(r);t.textContent='Đã chọn, nhấn Ctrl+C';setTimeout(function(){t.textContent='Copy'},2200)};
+    try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(err){fb()}
+    return;
+  }
+  if(t.id==='redetect'){detect();applyDetect(true);save();render();return;}
+  if(t.id==='plan-toggle'){var cur=curPlan();S.plan=cur==='local'?'colab':'local';S.planUser=true;save();render();return;}
+  if(t.id==='reset'){S.done={};save();render();return;}
+});
+
+detect(); applyDetect(false); save(); render();
+})();
+</script>
+
+</html>
