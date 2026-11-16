@@ -117,7 +117,7 @@ Chi tiết và cách ghi vào `recipe.md`: [docs/MODELS.md](docs/MODELS.md) mụ
 | Bạn cần | Xem |
 |---|---|
 | Các Part và lệnh chạy | [GUIDE.md](GUIDE.md) |
-| ⏱ Mốc tiến độ | [CHECKPOINTS.md](CHECKPOINTS.md) |
+| Mốc tiến độ | [CHECKPOINTS.md](CHECKPOINTS.md) |
 | Quy tắc làm bài | [RULES.md](RULES.md) |
 | Chấm điểm (100 điểm) | [RUBRIC.md](RUBRIC.md) |
 | Sản phẩm phải nộp, tên repo | [SUBMISSION.md](SUBMISSION.md) |
