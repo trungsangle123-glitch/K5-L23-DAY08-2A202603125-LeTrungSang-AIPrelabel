@@ -19,7 +19,8 @@ Slide tham khảo: Day 08 (pre-label, checklist 4 bước, thiên kiến tự đ
 
 ## Lộ trình máy yếu (CPU only, ≤ 8 GB RAM) và Windows
 
-- Làm **mọi lệnh** với `--size n`, `--imgsz 640` và `--sam2 sam2.1_t.pt`; tải `--set small`. Bỏ Grounding DINO / OWLv2 / SAM 3 (mục D, E của MODELS.md): vẫn đủ điểm.
+- **Lựa chọn tốt nhất: Google Colab** (GPU T4 miễn phí) để chạy model, xem [docs/COLAB.md](docs/COLAB.md); CVAT và các script đo vẫn chạy trên máy bạn.
+- Hoặc chạy local: làm **mọi lệnh** với `--size n`, `--imgsz 640` và `--sam mobile_sam.pt` (hoặc `sam2.1_t.pt`); tải `--set small` và `--set sam1`. **SAM vẫn bắt buộc** (chọn SAM 1 nhẹ). Bỏ Grounding DINO / OWLv2 / SAM 3 (mục D, E của MODELS.md): vẫn đủ điểm.
 - Chạy model **từng tập** (không `--split all` một lần với model lớn) và để máy chạy trong lúc bạn duyệt; thời gian chạy CPU của model nhỏ trên 36 ảnh thường là vài phút, SAM 2.1 mất thêm vài giây mỗi vật (số này là **ước lượng**, hãy ghi số đo của bạn vào `model_log`).
 - **Windows PowerShell:** (1) lệnh nhiều dòng trong tài liệu dùng `\` (bash): trên PowerShell hãy gộp thành **một dòng** hoặc thay `\` bằng dấu `` ` `` ở cuối dòng; (2) giá trị có dấu phẩy phải đặt trong **nháy kép**: `--split "batch,gold"`, `--classes "person,car"`, `--pos "400,480"`, `--thr "person=0.35,car=0.4"`; (3) `source .venv/bin/activate` → `.venv\Scripts\Activate.ps1`. Cách dễ nhất: dùng **Git Bash** hoặc **WSL** và chạy y nguyên lệnh trong tài liệu.
 - File CSV (`model_log`, `time_log`, `calibration_decisions`, `qc_review`): sửa bằng trình soạn thảo văn bản, lưu **UTF-8** dấu phẩy. Excel hay lưu ANSI / dấu `;` làm script đọc sai.
@@ -56,7 +57,7 @@ Một mẫu gốc, ba vai: **không bao giờ** dùng gold để chọn ngưỡn
 | 2 | thử 5 loại model | `prelabel.py` | `model_log.csv`, nháp `recipe.md` |
 | 3 | duyệt pilot, chọn ngưỡng | `merge_prelabels.py`, `threshold_sweep.py` | `labels/pilot_reviewed.json`, `qc/threshold_sweep.*` |
 | 4 | pre-label + bẫy + review (24 ảnh) | `inject_traps.py`, `review_stats.py` | `prelabel/pre_traps…`, `labels/batch_reviewed.json`, `qc/review_stats.*` |
-| 5 | mask | `prelabel.py --segmenter sam2`, `coco_to_cvat_xml.py` | `labels/seg_reviewed.json` |
+| 5 | mask | `prelabel.py --segmenter sam --sam <phiên bản>`, `coco_to_cvat_xml.py` | `labels/seg_reviewed.json` |
 | 6 | calibration + QC | `threshold…` đã có, `self_consistency.py`, `qc_sample.py`, `qc_report.py`, `check_submission.py` | `guideline_v1.1_calibrated.md`, `QC_REPORT.md`, `REPORT.md` |
 
 ---
@@ -90,7 +91,7 @@ Một mẫu gốc, ba vai: **không bao giờ** dùng gold để chọn ngưỡn
 
 Làm theo [docs/MODELS.md](docs/MODELS.md), mục A → F. Mỗi lần chạy `prelabel.py` bạn ghi **một dòng** vào `submission/model_log.csv` (copy từ `work/runs.csv`, rồi điền `what_went_right`, `what_went_wrong`, `decision` **bằng mắt nhìn ảnh**).
 
-Tối thiểu (kiểm tự động): **≥ 6 lần chạy, ≥ 3 model khác nhau** (gồm YOLO26, một model open-vocab, SAM 2.1). Khuyến khích: thử cả Grounding DINO / OWLv2; SAM 3 nếu có quyền.
+Tối thiểu (kiểm tự động): **≥ 6 lần chạy, ≥ 3 model khác nhau** (gồm YOLO26, một model open-vocab, và **SAM: bắt buộc**; bạn chọn phiên bản SAM 1 / SAM 2.1 / SAM 3, xem [MODELS.md mục B0](docs/MODELS.md)). Khuyến khích: thử cả Grounding DINO / OWLv2; SAM 3 nếu có quyền.
 
 Cuối Part 2:
 1. Chạy `--split all --conf 0.05` cho YOLO26 và YOLOE (mục F của MODELS.md): hai file nguồn cho mọi Part sau.
@@ -146,13 +147,13 @@ Cuối Part 2:
 **Sản phẩm:** `prelabel/pre_traps.coco.json`, `prelabel/traps_key.json`, `labels/batch_reviewed.json`, `qc/review_stats.{json,md}`, `time_log.csv` (`batch_review`).
 > *Tự hỏi:* `accepted` 84% nhưng bắt bẫy 60% nghĩa là gì? Vì sao `added` thấp không có nghĩa là máy không sót vật?
 
-## Part 5 — Segmentation và CVAT trực tiếp (45–60 phút)
+## Part 5 — Segmentation (SAM) và CVAT trực tiếp (45–60 phút)
 
-**5a. Mask từ SAM 2.** Tạo pre-label mask cho 8 ảnh `seg`:
+**5a. Mask từ SAM (phiên bản bạn đã chọn ở Part 2).** Tạo pre-label mask cho 8 ảnh `seg`. Lệnh dưới dùng SAM 2.1 (`--sam sam2.1_b.pt`); đổi sang `--sam mobile_sam.pt` (SAM 1) nếu bạn chọn SAM 1. **Chọn SAM 3:** dùng `python scripts/prelabel.py --model sam3 --split seg --conf 0.4 --out submission/prelabel/seg_sam3` (gõ chữ, ra mask cho mọi lớp theo `taxonomy.json`) rồi copy `pre.coco.json` thành `submission/prelabel/seg_pre.coco.json`.
 ```bash
 python scripts/prelabel.py --model yolo26 --size m --classes person,bicycle,motorbike,car,bus,truck --split seg --thr "<ngưỡng từ recipe>" --conf 0.3 \
-    --segmenter sam2 --out work/prelabel/seg_y26
-python scripts/prelabel.py --model yoloe --classes three_wheeler --split seg --conf 0.25 --segmenter sam2 --out work/prelabel/seg_yoloe
+    --segmenter sam --sam sam2.1_b.pt --out work/prelabel/seg_y26
+python scripts/prelabel.py --model yoloe --classes three_wheeler --split seg --conf 0.25 --segmenter sam --sam sam2.1_b.pt --out work/prelabel/seg_yoloe
 python scripts/merge_prelabels.py work/prelabel/seg_yoloe/pre.coco.json work/prelabel/seg_y26/pre.coco.json \
     --conf 0.25 --iou 0.6 --split seg --out submission/prelabel/seg_pre.coco.json
 python scripts/coco_to_cvat_xml.py --coco submission/prelabel/seg_pre.coco.json --shape polygon --out work/cvat_import/seg_pre.xml

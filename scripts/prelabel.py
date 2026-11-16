@@ -11,13 +11,14 @@ Các model (từ đơn giản đến phức tạp):
 Bộ tách mask (--segmenter):
   none     chỉ box (mặc định)
   native   dùng mask của chính model (yolo26-seg, yoloe-seg, sam3)
-  sam2     mỗi box -> SAM 2.1 -> mask (kiểu "detector -> segmenter" của Grounded-SAM)
+  sam      mỗi box -> SAM (bất kỳ phiên bản trong --sam: SAM 1 / SAM 2.1) -> mask (kiểu "detector -> segmenter" của Grounded-SAM)
+           (`sam2` là tên cũ, vẫn dùng được). SAM 3 chạy riêng bằng --model sam3 (gõ chữ -> mask).
 
 Ví dụ:
   python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.25 --out work/prelabel/y26_pilot
   python scripts/prelabel.py --model yoloe --prompts "tuk-tuk=three_wheeler,cyclo=three_wheeler" \
          --classes three_wheeler --split batch --out work/prelabel/yoloe_batch
-  python scripts/prelabel.py --model yolo26 --size m --split batch --segmenter sam2 --out work/prelabel/y26_sam2
+  python scripts/prelabel.py --model yolo26 --size m --split batch --segmenter sam --sam sam2.1_b.pt --out work/prelabel/y26_sam
 """
 from __future__ import annotations
 
@@ -286,8 +287,9 @@ def main():
     ap.add_argument("--classes", help="chỉ GIỮ các lớp này (cách nhau dấu phẩy), ví dụ three_wheeler")
     ap.add_argument("--conf", type=float, default=0.25, help="ngưỡng tin cậy mặc định")
     ap.add_argument("--thr", help="ngưỡng riêng từng lớp, ví dụ person=0.3,car=0.4 (ghi đè --conf)")
-    ap.add_argument("--segmenter", default="none", choices=["none", "native", "sam2"])
-    ap.add_argument("--sam2", default="sam2.1_b.pt", help="trọng số SAM 2 khi --segmenter sam2 (sam2.1_t/s/b/l.pt)")
+    ap.add_argument("--segmenter", default="none", choices=["none", "native", "sam", "sam2"])
+    ap.add_argument("--sam", "--sam2", dest="sam", default="sam2.1_b.pt",
+                    help="trọng số SAM khi --segmenter sam: SAM 1 = mobile_sam.pt | sam_b.pt | sam_l.pt ; SAM 2.1 = sam2.1_t.pt | sam2.1_s.pt | sam2.1_b.pt | sam2.1_l.pt")
     ap.add_argument("--map", help="ánh xạ tên thô -> lớp, ví dụ motorcycle=motorbike (bổ sung cho taxonomy.coco_map)")
     ap.add_argument("--nms", type=float, default=0.7, help="open-vocab: IoU để loại box trùng giữa các cụm chữ cùng lớp")
     ap.add_argument("--imgsz", type=int, default=1024)
@@ -347,9 +349,9 @@ def main():
           + (f" | theo lớp {thr}" if thr else ""))
     t0 = time.time()
     be = BACKENDS[a.model](a, tax, device, min_conf, prompts)
-    sam2 = Sam2Segmenter(a.sam2, device) if a.segmenter == "sam2" else None
+    sam2 = Sam2Segmenter(a.sam, device) if a.segmenter in ("sam", "sam2") else None
     if a.segmenter == "native" and not be.native_masks:
-        die(f"Model '{a.model}' không có mask gốc. Dùng --segmenter sam2 hoặc bỏ --segmenter.")
+        die(f"Model '{a.model}' không có mask gốc. Dùng --segmenter sam hoặc bỏ --segmenter.")
     t_load = time.time() - t0
 
     images, anns = [], []

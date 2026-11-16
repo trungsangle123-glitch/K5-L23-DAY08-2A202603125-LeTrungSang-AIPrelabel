@@ -1,5 +1,7 @@
 # Dùng pre-label với CVAT
 
+![Hai cách đưa nhãn máy vào CVAT](assets/two_paths.png)
+
 Bản CVAT trong slide là **2.81**. Tên nút / menu giao diện dưới đây theo tài liệu CVAT 2.8x và có thể khác chút ở bản của bạn: nếu lệch, tra https://docs.cvat.ai và **ghi chú chỗ lệch vào `REPORT.md`** (đó là thông tin có giá trị). Bạn dùng **cvat.ai** (cloud) hoặc CVAT chạy Docker trên máy bạn (mục 7). Có **hai cách** đưa nhãn máy vào CVAT:
 
 | Cách | Làm gì | Khi nào chọn | Chạy được ở đâu |
@@ -21,6 +23,8 @@ python scripts/make_cvat_labels.py          # ghi cvat/labels_generated.json
 1. CVAT → **Projects → Create new project**, tên `day08-<MSHV>`.
 2. Mục **Labels** → tab **Raw** → dán toàn bộ `cvat/labels_generated.json` → **Done** → **Submit & Open**.
 3. Kiểm tra: có đủ 8 nhãn (`person … three_wheeler`, `ignore_region`); mỗi nhãn (trừ `ignore_region`) có thuộc tính `conf` (text) và `can_review` (checkbox). Loại hình của nhãn là **Any** (vẽ được cả rectangle lẫn polygon).
+
+![Dán nhãn vào tab Raw](assets/cvat_project_labels.png)
 
 Tên nhãn trong CVAT **phải trùng từng chữ** với `taxonomy.json` (script map theo tên).
 
@@ -45,6 +49,12 @@ Sinh `work/tasks/{gold,pilot,review,seg}/`. Mỗi thư mục là **một Task** 
 
 ### 3a. Box (detection): COCO 1.0
 
+![Ba bước nạp nhãn](assets/cvat_upload_flow.png)
+
+Ảnh **thật** của menu *Actions* trong CVAT (từ tài liệu CVAT, giấy phép MIT):
+
+<img src="assets/cvat/cvat-actions-menu.jpg" width="260" alt="Menu Actions của Task trong CVAT">
+
 1. Task → menu **Actions (⋮) → Upload annotations**.
 2. **Import format: COCO 1.0** → chọn file `.json` (ví dụ `submission/prelabel/pre_traps.coco.json`) → **OK**. CVAT nhận được cả `.json` lẫn `.zip`.
 3. Mở Task: đếm số box có trong ảnh đầu tiên và so với `viz/` bạn xem trước. Lệch nhiều = nhãn đang sai (xem mục 8).
@@ -66,6 +76,8 @@ Task → **Actions → Upload annotations → CVAT 1.1** → chọn `seg_pre.xml
 - **Nạp lại**: tuỳ phiên bản CVAT, nạp lần hai có thể **ghi đè** hoặc **cộng thêm** nhãn. Luôn đếm số box sau khi nạp. Muốn chắc chắn: **Actions → Remove annotations** rồi nạp lại một lần.
 
 ## 4. Duyệt trong CVAT (phím tắt và mẹo)
+
+![Bố cục màn hình job khi review](assets/cvat_job_ui.png)
 
 Xem toàn bộ phím bằng **F1** trong job. Những phím dùng nhiều (keymap 2.81):
 
@@ -104,13 +116,21 @@ Với box máy bạn sửa trong CVAT, `source` có thể đổi, nên **không 
 
 ### B1. Interactor (SAM): click ra mask
 
+![Interactor: trái sang phải: ảnh gốc, click dương/âm, mask](assets/cvat/cvat-ai-tools-interactor.jpg)
+
+*Ảnh từ tài liệu CVAT (MIT).*
+
 Trong job: thanh công cụ trái → **AI Tools** → tab **Interactors** → chọn model **Segment Anything** (SAM / SAM 2 tuỳ máy chủ) → chọn nhãn → click **trái** vào vật (dương), **phải** vào vùng thừa (âm) → `N` kết thúc, mask thành polygon.
 Menu **Models** (thanh trên cùng) phải có tên model; không thấy nghĩa là máy chủ chưa cài.
 
 Hạn chế đã gặp: **mỗi nhà cung cấp một khác**. Gói miễn phí của cvat.ai có thể giới hạn AI tools; CVAT Docker mặc định **chưa** cài model (mục 7).
-Không dùng được B1? Thay bằng `scripts/sam2_points.py` (Part 2 mục B1) cho phần "hiểu", và box → mask bằng SAM 2.1 trong `prelabel.py --segmenter sam2` cho phần "làm".
+Không dùng được B1? Thay bằng `scripts/sam2_points.py` (Part 2 mục B1) cho phần "hiểu", và box → mask bằng SAM trong `prelabel.py --segmenter sam --sam <phiên bản>` cho phần "làm".
 
 ### B2. Automatic annotation (model có sẵn trong CVAT)
+
+<img src="assets/cvat/cvat-running-auto.png" width="420" alt="Hộp thoại Automatic annotation: Model, Labels matching, Clean previous annotations, Threshold">
+
+*Ba ô cần điền: **Model**, **Labels matching** (Model Spec → CVAT Spec; sai thì sai cả lô), **Clean previous annotations** (để **tắt**: bật sẽ xoá nhãn bạn đã vẽ). Ô *Threshold* có hay không tuỳ model. Ảnh từ tài liệu CVAT (MIT).*
 
 Task trong danh sách → **⋮ → Automatic annotation** → chọn **Model** → **Labels matching** (nhãn của model → nhãn Project) → **Clean old annotations** (**tắt**: bật sẽ xoá nhãn bạn đã vẽ) → **Annotate**.
 - Chạy thử trên Task mẫu nhỏ trước khi chạy cả lô. Kiểm 5 ảnh đầu: ánh xạ sai thì sai cả lô.
@@ -188,3 +208,7 @@ Trên **Mac Apple Silicon** các image Nuclio thường là amd64 và rất ch�
 | `cvat-cli`: lỗi xác thực | Sai `--server-host`/`--server-port` (CVAT Docker: `http://localhost` + `8080`) hoặc sai mật khẩu |
 | `cvat-cli` báo nhãn không khớp | Hàm khai báo nhãn trùng **tên** với nhãn Project; kiểm tra bước 1 |
 | Automatic annotation không có model | Máy chủ chưa cài model (mục 7) → dùng B3 |
+
+---
+
+*Nguồn ảnh:* các ảnh trong `assets/cvat/` lấy từ tài liệu CVAT (https://docs.cvat.ai, repo cvat-ai/cvat, giấy phép MIT). Các sơ đồ còn lại (`two_paths`, `cvat_project_labels`, `cvat_upload_flow`, `cvat_job_ui`) do giảng viên vẽ bằng `assets/make_figures.py`, **không phải ảnh chụp màn hình**: tên nút / vị trí có thể khác theo phiên bản CVAT.

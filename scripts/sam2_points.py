@@ -1,4 +1,4 @@
-"""SAM 2.1 với prompt là CLICK (giống công cụ Interactor trong CVAT): thử trên một ảnh, xem mask thay đổi theo click.
+"""SAM (bản bất kỳ: SAM 1 / SAM 2.1) với prompt là CLICK (giống công cụ Interactor trong CVAT): thử trên một ảnh, xem mask thay đổi theo click.
 
     python scripts/sam2_points.py --image img_013.jpg --pos 520,330 --neg 130,300 --out work/sam2_click
     python scripts/sam2_points.py --image img_013.jpg --pos 520,330 --box 90,30,960,640 --out work/sam2_click
@@ -35,7 +35,7 @@ def main():
     ap.add_argument("--pos", action="append", default=[])
     ap.add_argument("--neg", action="append", default=[])
     ap.add_argument("--box")
-    ap.add_argument("--sam2", default="sam2.1_b.pt")
+    ap.add_argument("--sam", "--sam2", dest="sam", default="sam2.1_b.pt", help="mobile_sam.pt | sam_b.pt (SAM 1) | sam2.1_t/s/b/l.pt (SAM 2.1)")
     ap.add_argument("--device", default="auto")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
@@ -45,7 +45,7 @@ def main():
     if not a.pos and not a.box:
         die("Cần ít nhất một --pos hoặc --box.")
     from ultralytics import SAM
-    model = SAM(weights_path(a.sam2))
+    model = SAM(weights_path(a.sam))
     pts = [pt(s) for s in a.pos] + [pt(s) for s in a.neg]
     labels = [1] * len(a.pos) + [0] * len(a.neg)
     kw = {}

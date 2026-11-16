@@ -9,10 +9,12 @@ Mọi lệnh chạy ở thư mục gốc repo, venv đã kích hoạt ([SETUP.md
 
 ## Bản đồ nhanh
 
+![Bốn họ model](assets/model_families.png)
+
 | # | Model | Đầu vào | Đầu ra | Dùng khi | Điểm yếu cần kiểm |
 |---|---|---|---|---|---|
 | A | **YOLO26** | ảnh | box + 1 trong 80 lớp COCO | lớp đã có trong COCO, số lượng lớn | không biết lớp mới (tuk-tuk → car/truck), vật nhỏ ở xa |
-| B | **SAM 2.1** | ảnh + click / box | mask | cần đường bao sát | mask chỉ tốt khi prompt tốt; một click mơ hồ (vật hay bộ phận?) |
+| B | **SAM** (bắt buộc; chọn 1 phiên bản: SAM 1 · SAM 2.1 · SAM 3) | ảnh + click / box (SAM 3: chữ) | mask | cần đường bao sát | mask chỉ tốt khi prompt tốt; một click mơ hồ (vật hay bộ phận?) |
 | C | **YOLOE-26** (open-vocab, real-time) | ảnh + chữ | box + mask | lớp mới, cần nhanh | gọi nhầm lớp, box lỏng, chữ khác nhau cho kết quả khác nhau |
 | D | **Grounding DINO**, **OWLv2** (open-vocab, nặng hơn) | ảnh + chữ | box | cần thử model khác để so sánh | chậm hơn; ngưỡng text/box khác nhau; nhận nhầm khái niệm |
 | E | **SAM 3** (concept prompting) | ảnh + chữ | **mọi instance + mask** | muốn mask hàng loạt từ chữ | gated; yếu với khái niệm hiếm / bị che |
@@ -58,16 +60,29 @@ Mở `viz/`: mask của YOLO26-seg thường **thô** (đa giác thấp độ ph
 
 ---
 
-## B. SAM 2.1 — Segment Anything: từ prompt ra mask
+## B. SAM — Segment Anything: từ prompt ra mask (**BẮT BUỘC**)
 
 **Là gì.** Model "phân đoạn mọi thứ" của Meta. Bạn đưa **prompt hình học** (click dương / âm, hoặc box) và nó trả mask. Không biết tên lớp.
 Trong CVAT đây là công cụ **Interactor** (click trái = thêm, click phải = bớt).
+
+### B0. Chọn phiên bản SAM (bắt buộc dùng ít nhất một)
+
+| Phiên bản | Trọng số | Cỡ | Prompt | Chạy bằng | Hợp khi |
+|---|---|---|---|---|---|
+| **SAM 1** (2023) | `mobile_sam.pt` (bản nhẹ) · `sam_b.pt` · `sam_l.pt` | 40 MB · 375 MB · 1.2 GB | click, box | `--sam mobile_sam.pt` | máy yếu, chỉ cần mask cho ảnh tĩnh |
+| **SAM 2.1** (2024) | `sam2.1_t/s/b/l.pt` | 40–900 MB | click, box (+ video) | `--sam sam2.1_b.pt` (**mặc định**) | cân bằng chất lượng / tốc độ; khuyến nghị |
+| **SAM 3** (2025, gated) | `facebook/sam3` | ~3.5 GB | **chữ** (mọi instance) | `--model sam3` (mục E) | có GPU, có quyền truy cập, muốn mask hàng loạt từ chữ |
+
+- **Bạn chọn một phiên bản chính** cho Part 5 và ghi **vì sao** vào `recipe.md` (chất lượng mask, tốc độ, RAM, giấy phép, có cần quyền không).
+- `model_log.csv` phải có **ít nhất một dòng chạy SAM** ghi rõ phiên bản (tự kiểm tra bằng `check_submission.py`). Khuyến khích so **hai phiên bản** (ví dụ `mobile_sam.pt` và `sam2.1_b.pt`) trên cùng 3 vật và ghi biên mask khác nhau thế nào.
+- Chưa có quyền SAM 3? Chọn SAM 1 hoặc 2.1: vẫn **đủ yêu cầu**. Dùng SAM 3 được tính là đã dùng SAM.
+- Tải: `python scripts/download_models.py --set sam1` (mobile_sam) · `--set sam1-base` · `--set sam2` · `--set sam3`.
 
 ### B1. Prompt bằng click (mô phỏng Interactor)
 
 ```bash
 # một click vào huy hiệu vàng trên thân xe: mask rất nhỏ (chỉ cái huy hiệu)
-python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --out work/sam2_a
+python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --out work/sam2_a   # thêm --sam mobile_sam.pt để thử SAM 1
 # thêm click lên mui xe: mask phủ cả xe
 python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --pos 600,110 --out work/sam2_b
 # thêm click ÂM lên người lái, thử 1 rồi 2-3 click
@@ -83,11 +98,11 @@ python scripts/sam2_points.py --image img_013.jpg --pos 400,480 --pos 600,110 --
 - Guideline v1.0 nói người là `person` riêng, xe là `three_wheeler` riêng: mask của xe có gồm người lái không? Cần bao nhiêu click âm để loại?
 - Số polygon của mask (dòng in ra): vật rời rạc (do bị che) cho nhiều polygon. Guideline nói gì?
 
-### B2. Box → mask (kiểu "detector rồi segmenter")
+### B2. Box → mask (kiểu "detector rồi segmenter"; đổi `--sam` để chọn phiên bản)
 
 ```bash
 python scripts/prelabel.py --model yolo26 --size m --classes person,motorbike,car --images img_004.jpg img_013.jpg \
-    --conf 0.3 --segmenter sam2 --out work/prelabel/y26_sam2
+    --conf 0.3 --segmenter sam --sam sam2.1_b.pt --out work/prelabel/y26_sam2   # đổi --sam để so phiên bản
 ```
 
 **Nhìn gì.** Mask đúng khi box đúng. Box sai (ví dụ `car` bao cả tuk-tuk) thì mask tô **cả tuk-tuk** và vẫn mang nhãn sai: **sai lớp không phải do mask**.
@@ -139,7 +154,7 @@ python scripts/prelabel.py --model owlv2 --classes three_wheeler --split pilot -
 
 ---
 
-## E. SAM 3 — concept prompting: gõ chữ, ra mọi instance + mask (tuỳ chọn)
+## E. SAM 3 — concept prompting: gõ chữ, ra mọi instance + mask (một lựa chọn trong ba phiên bản SAM)
 
 **Là gì.** SAM 3 (Meta, 2025) nhận **cụm danh từ** và trả mask cho **mọi** vật khớp, không cần click. Yếu ở khái niệm hiếm, vật bị che (slide: cgF1 65.0 so với 74.2 của người).
 Model gated: xin quyền trước ([SETUP.md](SETUP.md) mục 4).

@@ -1,61 +1,143 @@
+<p align="center">
+  <img src="docs/assets/hero.png" alt="Day 08 Lab: AI hỗ trợ gán nhãn" width="100%">
+</p>
+
 # Day 08 Lab — AI hỗ trợ gán nhãn: Pre-label, Review, Calibration
 
-**Cá nhân · 7–10 giờ (chia 3 buổi) · 36 ảnh đường phố châu Á · detection + segmentation · CVAT**
+<p align="center">
+  <img alt="cá nhân" src="https://img.shields.io/badge/lab-cá%20nhân-0b1f3a">
+  <img alt="thời lượng" src="https://img.shields.io/badge/thời%20lượng-7–10%20giờ-ff8a3d">
+  <img alt="ảnh" src="https://img.shields.io/badge/dữ%20liệu-36%20ảnh-12b3a8">
+  <img alt="python" src="https://img.shields.io/badge/python-3.10–3.12-3776ab">
+  <img alt="gpu" src="https://img.shields.io/badge/GPU-không%20bắt%20buộc-2fbf71">
+  <a href="https://colab.research.google.com/github/VinUni-AI20k/K5-L23-Day08-AI-Assisted-Labeling/blob/main/notebooks/day08_colab.ipynb"><img alt="Mở trong Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a>
+</p>
 
-Hôm nay **máy gán sẵn, người sửa**. Bạn sẽ cài và chạy các công cụ pre-label **từ đơn giản đến phức tạp**
-(YOLO26 → SAM 2.1 → YOLOE → Grounding DINO / OWLv2 → SAM 3), đưa kết quả vào CVAT, **review có quy trình**,
-rồi **calibration** lại nhãn và guideline, và đo xem máy giúp được bao nhiêu (và làm bạn lười đến mức nào).
+> **Máy gán sẵn, người sửa.** Nhanh hơn vẽ tay — nhưng **bạn** vẫn là chốt chặn chất lượng, và bạn phải **đo** được điều đó.
 
-![Mẫu ảnh trong bộ dữ liệu](docs/assets/sample_grid.jpg)
+## 🎯 Bạn sẽ làm gì
 
-*Có gì lạ trong ảnh? Tuk-tuk, xích lô, xe ba gác: model COCO có sẵn gọi chúng là `car` / `truck`. Đó là lý do cần open-vocabulary.*
+Cài và chạy các công cụ pre-label **từ đơn giản đến phức tạp**, đưa kết quả vào **CVAT**, **review có quy trình** (có ảnh bẫy để đo chính bạn), rồi **calibration** lại nhãn và guideline.
 
-![Bốn cách pre-label trên cùng một ảnh](docs/assets/model_tour.jpg)
+| | Việc | Công cụ |
+|---|---|---|
+| 🟢 | Detector danh mục cố định | **YOLO26** |
+| 🟣 | Click ra mask (**SAM bắt buộc**, chọn SAM 1 · 2.1 · 3) | **SAM** |
+| 🟠 | Gõ chữ ra box + mask (open-vocabulary) | **YOLOE**, Grounding DINO, OWLv2, SAM 3 |
+| 🔴 | Đưa nhãn vào CVAT & review | CVAT: import · AI Tools · `cvat-cli` |
+| 🔵 | Đo & calibration | `review_stats` · `threshold_sweep` · `self_consistency` · QC |
 
-## Quy trình
+![Bốn họ model](docs/assets/model_families.png)
+
+## 🗺️ Lộ trình
+
+![Lộ trình 7 Part](docs/assets/roadmap.png)
 
 ```mermaid
 flowchart LR
   A[Part 1<br/>Gold gán tay<br/>không AI] --> B[Part 2<br/>Tour model]
   B --> C[Part 3<br/>Pilot: ngưỡng<br/>theo lớp]
   C --> D[Part 4<br/>Pre-label batch<br/>+ ảnh bẫy + review]
-  D --> E[Part 5<br/>Mask SAM 2<br/>+ CVAT trực tiếp]
+  D --> E[Part 5<br/>Mask SAM<br/>+ CVAT trực tiếp]
   E --> F[Part 6<br/>Calibration + QC<br/>+ báo cáo]
+  style A fill:#2fbf71,color:#fff
+  style B fill:#7b61ff,color:#fff
+  style C fill:#ff8a3d,color:#fff
+  style D fill:#e5484d,color:#fff
+  style E fill:#12b3a8,color:#fff
+  style F fill:#0b1f3a,color:#fff
 ```
 
-Trọng tâm: **máy chỉ đề xuất; bạn là chốt chặn chất lượng** và phải **đo** được nhãn của mình tốt đến đâu (không phải tin vì "trông đúng").
+## 🖼️ Bộ dữ liệu: phố châu Á, và những chiếc xe mà COCO không biết tên
 
-## Bắt đầu
+![Mẫu ảnh trong bộ dữ liệu](docs/assets/sample_grid.jpg)
 
-1. **Fork** repo này thành repo **public** của bạn (đặt tên theo [SUBMISSION.md](SUBMISSION.md)), `git clone`.
-2. Đọc **[GUIDE.md](GUIDE.md)** (từng Part, lệnh chạy) và **[RULES.md](RULES.md)**.
-3. Cài môi trường theo **[docs/SETUP.md](docs/SETUP.md)** (Python 3.10–3.12; không bắt buộc GPU).
+36 ảnh (Việt Nam, Thái Lan; CC BY / CC BY-SA / CC0): **gold 6** (gán tay) · **pilot 6** (chọn ngưỡng) · **batch 24** (lô thật, 8 ảnh làm segmentation). Khoảng 28% ảnh có **tuk-tuk, xích lô, ba gác** (lớp `three_wheeler`): model COCO gọi chúng là `car` / `truck`.
+
+![Bốn cách pre-label trên cùng một ảnh](docs/assets/model_tour.jpg)
+
+*Cùng một ảnh: (1) YOLO26 gọi tuk-tuk là car/truck · (2) YOLOE gõ chữ tìm đúng nhưng box lỏng · (3) Grounding DINO · (4) box → SAM → mask.*
+
+## 🚀 Bắt đầu nhanh (5 bước)
+
+1. **Fork** repo thành repo **public** của bạn (tên: xem [SUBMISSION.md](SUBMISSION.md)), `git clone`.
+2. Cài môi trường: [docs/SETUP.md](docs/SETUP.md) → `python scripts/check_env.py` ra **SẴN SÀNG**. *Máy yếu? Dùng* **[Google Colab](docs/COLAB.md)**.
+3. Tạo Project CVAT từ `cvat/labels_generated.json`: [docs/CVAT_AI.md](docs/CVAT_AI.md) (có hình minh hoạ từng bước).
+4. Làm theo **[GUIDE.md](GUIDE.md)** từ **Part 1** (gán tay gold, *chưa* chạy model nào lên ảnh gold!).
+5. Chạy `python scripts/check_submission.py` trước khi nộp.
 
 > **Khi nộp:** đổi dòng tiêu đề này thành `# Day 08 Lab — <MSHV> - <Họ và tên>`. Xem [SUBMISSION.md](SUBMISSION.md).
 
-## Bạn sẽ học được gì
+## 🔍 CVAT: hai cách dùng AI
 
-- Chọn đúng **họ model** cho việc: click (SAM) · gõ chữ (YOLOE, Grounding DINO, OWLv2, SAM 3) · danh mục cố định (YOLO26).
-- Đưa nhãn máy vào CVAT hai cách: **offline import** và **trực tiếp** (AI Tools, `cvat-cli`).
-- Duyệt bằng **checklist bốn bước**, nhận ra **thiên kiến tự động hóa** bằng **ảnh bẫy** của chính bạn.
-- Đo **AI error profile** (accepted / edited / deleted / added), precision / recall của máy so với **gold gán tay**, và tỉ lệ bắt **ảnh bẫy** (đo chính bạn).
-- **Calibration** ở bốn tầng: ngưỡng theo lớp, guideline, nhất quán của chính bạn, QC và Release / Hold / Rework.
+![Hai cách đưa nhãn máy vào CVAT](docs/assets/two_paths.png)
 
-## Tài liệu
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/cvat_job_ui.png" alt="Bố cục màn hình job khi review"><br><sub>Bố cục màn hình review (sơ đồ minh hoạ)</sub></td>
+<td width="50%"><img src="docs/assets/cvat/cvat-ai-tools-interactor.jpg" alt="SAM Interactor"><br><sub>SAM Interactor: click dương / âm → mask (ảnh từ tài liệu CVAT, MIT)</sub></td>
+</tr>
+</table>
+
+## ✅ Quy trình review: 4 bước + quét ảnh trước
+
+![Checklist review](docs/assets/review_checklist.png)
+
+<details>
+<summary><b>Vì sao có "ảnh bẫy" và "gold gán tay"?</b></summary>
+
+Nhãn máy càng trông hợp lý, mắt bạn càng ít nhìn lại ảnh (**thiên kiến tự động hóa**). Bạn sẽ tự đo mình:
+- **Gold** (6 ảnh bạn gán tay từ đầu) cho biết máy đúng / sót bao nhiêu **thật sự**.
+- **12 ảnh bẫy** (lỗi đã biết, trộn kín trong pre-label) cho biết bạn **bắt được bao nhiêu** lỗi của máy.
+- *Accepted cao* mà *bắt bẫy thấp* nghĩa là bạn đang bấm Accept chứ chưa kiểm.
+</details>
+
+<details>
+<summary><b>Mình dùng máy yếu / Windows / Mac thì sao?</b></summary>
+
+- **Không GPU / RAM ≤ 8 GB:** chạy model trên **[Colab](docs/COLAB.md)** (GPU T4 miễn phí) hoặc dùng `--size n --imgsz 640` + `mobile_sam.pt` (xem [SETUP.md](docs/SETUP.md) mục 5).
+- **Windows:** dùng Git Bash / WSL để chạy y nguyên lệnh, hoặc xem mục "Lộ trình máy yếu" trong [GUIDE.md](GUIDE.md) về PowerShell.
+- **Mac Apple Silicon:** chạy tốt trên MPS; lỗi MPS thì `--device cpu` hoặc `PYTORCH_ENABLE_MPS_FALLBACK=1`.
+</details>
+
+<details>
+<summary><b>SAM là bắt buộc — chọn phiên bản nào?</b></summary>
+
+| Phiên bản | Chạy bằng | Hợp khi |
+|---|---|---|
+| SAM 1 (`mobile_sam.pt`, `sam_b.pt`) | `--sam mobile_sam.pt` | máy yếu |
+| **SAM 2.1** (`sam2.1_b.pt`) — khuyến nghị | `--sam sam2.1_b.pt` | cân bằng chất lượng / tốc độ |
+| SAM 3 (gated, gõ chữ ra mask) | `--model sam3` | có GPU + quyền truy cập |
+
+Chi tiết và cách ghi vào `recipe.md`: [docs/MODELS.md](docs/MODELS.md) mục B0.
+</details>
+
+## 📚 Tài liệu
 
 | Bạn cần | Xem |
 |---|---|
-| Các Part và lệnh chạy | [GUIDE.md](GUIDE.md) |
-| Mốc tiến độ | [CHECKPOINTS.md](CHECKPOINTS.md) |
-| Quy tắc làm bài | [RULES.md](RULES.md) |
-| Chấm điểm (100 điểm) | [RUBRIC.md](RUBRIC.md) |
-| Sản phẩm phải nộp, tên repo, checklist | [SUBMISSION.md](SUBMISSION.md) |
-| Cài đặt môi trường, tải model | [docs/SETUP.md](docs/SETUP.md) |
-| Tour các model (YOLO26, SAM 2, YOLOE, Grounding DINO, OWLv2, SAM 3) | [docs/MODELS.md](docs/MODELS.md) |
-| Dùng pre-label với CVAT (import, AI Tools, cvat-cli) | [docs/CVAT_AI.md](docs/CVAT_AI.md) |
-| Quy trình review, ảnh bẫy | [docs/REVIEW_CHECKLIST.md](docs/REVIEW_CHECKLIST.md) |
-| Calibration và QC, cách đọc số đo | [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md) |
-| Label contract (guideline v1.0) và khung v1.1 | [guideline/](guideline/) |
-| Các script | [scripts/README.md](scripts/README.md) |
-| Nguồn và giấy phép ảnh | [data/README.md](data/README.md), [data/ATTRIBUTION.csv](data/ATTRIBUTION.csv) |
-| Thông tin và kết quả tóm tắt của bạn | [STUDENT.md](STUDENT.md) |
+| 🧭 Các Part và lệnh chạy | [GUIDE.md](GUIDE.md) |
+| ⏱️ Mốc tiến độ | [CHECKPOINTS.md](CHECKPOINTS.md) |
+| 📏 Quy tắc làm bài | [RULES.md](RULES.md) |
+| 💯 Chấm điểm (100 điểm) | [RUBRIC.md](RUBRIC.md) |
+| 📦 Sản phẩm phải nộp, tên repo | [SUBMISSION.md](SUBMISSION.md) |
+| 🛠️ Cài đặt môi trường, tải model | [docs/SETUP.md](docs/SETUP.md) |
+| ☁️ Chạy trên Google Colab | [docs/COLAB.md](docs/COLAB.md) |
+| 🤖 Tour model (YOLO26, SAM, YOLOE, Grounding DINO, OWLv2, SAM 3) | [docs/MODELS.md](docs/MODELS.md) |
+| 🖱️ CVAT: import, AI Tools, `cvat-cli` (có hình) | [docs/CVAT_AI.md](docs/CVAT_AI.md) |
+| ✅ Quy trình review, ảnh bẫy | [docs/REVIEW_CHECKLIST.md](docs/REVIEW_CHECKLIST.md) |
+| 🎚️ Calibration & QC, cách đọc số đo | [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md) |
+| 📝 Label contract (guideline v1.0) + khung v1.1 | [guideline/](guideline/) |
+| 🧰 Các script | [scripts/README.md](scripts/README.md) |
+| 🖼️ Nguồn & giấy phép ảnh | [data/README.md](data/README.md), [data/ATTRIBUTION.csv](data/ATTRIBUTION.csv) |
+| 🙋 Thông tin & kết quả tóm tắt của bạn | [STUDENT.md](STUDENT.md) |
+
+## 🏁 Bạn học được gì
+
+- Chọn đúng **họ model** cho việc: click (SAM) · gõ chữ (YOLOE, Grounding DINO, OWLv2, SAM 3) · danh mục cố định (YOLO26).
+- Đưa nhãn vào CVAT hai cách: **offline import** và **trực tiếp** (AI Tools, `cvat-cli`).
+- Duyệt bằng **checklist bốn bước**; nhận ra **thiên kiến tự động hóa** bằng **ảnh bẫy** của chính bạn.
+- Đo **AI error profile** (accepted / edited / deleted / added), precision / recall của máy so với **gold gán tay**.
+- **Calibration** bốn tầng: ngưỡng theo lớp · guideline · nhất quán của chính bạn · QC với Release / Hold / Rework.
+
+<sub>Ảnh minh hoạ giao diện CVAT trong `docs/assets/cvat/` lấy từ tài liệu CVAT (MIT). Sơ đồ khác do giảng viên vẽ (`docs/assets/make_figures.py`).</sub>

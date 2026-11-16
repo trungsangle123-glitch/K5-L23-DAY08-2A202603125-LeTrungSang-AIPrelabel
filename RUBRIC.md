@@ -27,9 +27,9 @@ Bắt bẫy 60% mà phân tích trung thực nguyên nhân tốt hơn 100% mà k
 - *Mất điểm:* gold giống hệt pre-label đến từng pixel (nghi dùng AI); tick `can_review` cho mọi box.
 
 ## 3. Tour model và recipe (20)
-- 6: ≥ 6 lần chạy, ≥ 3 model khác nhau (closed-set, SAM, open-vocab); mỗi dòng có thông số đủ để chạy lại.
+- 6: ≥ 6 lần chạy, ≥ 3 model khác nhau (closed-set, **SAM bắt buộc**, open-vocab); mỗi dòng có thông số đủ để chạy lại; ghi rõ phiên bản SAM.
 - 8: `what_went_wrong` **cụ thể** (ảnh, vật, loại lỗi), không chung chung; có so sánh giữa model / ngưỡng / prompt.
-- 6: `recipe.md`: lớp nào dùng model nào và **vì sao**, dựa trên `model_log`; hiểu được lỗi nào **không** sửa bằng ngưỡng (tuk-tuk → car/truck).
+- 6: `recipe.md`: lớp nào dùng model nào và **vì sao**, **phiên bản SAM đã chọn và lý do**, dựa trên `model_log`; hiểu được lỗi nào **không** sửa bằng ngưỡng (tuk-tuk → car/truck).
 - *Mất điểm:* chỉ chạy lệnh trong hướng dẫn, không quan sát; số liệu `model_log` không khớp `work/runs.csv` / không tái lập được.
 
 ## 4. Pilot và ngưỡng (10)

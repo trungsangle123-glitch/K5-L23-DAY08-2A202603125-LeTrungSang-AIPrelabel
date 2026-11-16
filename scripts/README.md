@@ -36,7 +36,8 @@ Chạy **từ thư mục gốc repo** (`python scripts/<tên>.py`), venv đã k�
 | `--conf`, `--thr person=0.4,car=0.5` | ngưỡng mặc định, ngưỡng riêng từng lớp |
 | `--classes` | chỉ **giữ** các lớp này (ví dụ `three_wheeler`) |
 | `--prompts 'tuk-tuk=three_wheeler,...'` | open-vocab: cụm chữ → lớp (mặc định lấy từ `taxonomy.json`) |
-| `--segmenter` | `none` · `native` (mask của model) · `sam2` (box → SAM 2.1) |
+| `--segmenter` | `none` · `native` (mask của model) · `sam` (box → SAM; `sam2` là tên cũ) |
+| `--sam` | trọng số SAM: SAM 1 `mobile_sam.pt` / `sam_b.pt`; SAM 2.1 `sam2.1_t/s/b/l.pt` (SAM 3: dùng `--model sam3`). **SAM bắt buộc**, bạn chọn phiên bản |
 | `--map motorcycle=motorbike` | ánh xạ tên thô → lớp, bổ sung `coco_map` |
 | `--device` | `auto` · `cpu` · `mps` · `cuda` |
 

@@ -68,6 +68,8 @@ def main() -> None:
         t = (SUB / "recipe.md").read_text(encoding="utf8")
         if "<<" in t:
             E("recipe.md còn chỗ chưa điền")
+        if "sam" not in t.lower():
+            E("recipe.md: chưa nêu phiên bản SAM bạn chọn và vì sao (SAM là bắt buộc)")
     ml = SUB / "model_log.csv"
     if exists(ml):
         rows = [r for r in read_csv(ml) if (r.get("run_id") or "").strip()]
@@ -78,6 +80,8 @@ def main() -> None:
                 W(f"model_log.csv dòng {i}: cột what_went_wrong trống (ghi lỗi quan sát được)")
         if len({r.get("model", "") for r in rows}) < 3:
             E("model_log.csv: cần thử ≥ 3 model khác nhau")
+        if not any("sam" in (r.get("model", "") + " " + r.get("params", "")).lower() for r in rows):
+            E("model_log.csv: SAM là BẮT BUỘC: cần ít nhất một dòng chạy SAM (SAM 1 / SAM 2.1 / SAM 3) và ghi rõ phiên bản")
     tl = SUB / "time_log.csv"
     if exists(tl):
         rows = [r for r in read_csv(tl) if (r.get("step") or "").strip() and (r.get("minutes") or "").strip()]

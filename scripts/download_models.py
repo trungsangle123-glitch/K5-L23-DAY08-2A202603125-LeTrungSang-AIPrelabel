@@ -4,6 +4,7 @@ Bộ:
   core   yolo26m, yolo26m-seg, yoloe-26s-seg, sam2.1_b            (~0.5 GB)  Part 2-5, bắt buộc
   small  yolo26n, yolo26n-seg, yoloe-26s-seg, sam2.1_t            (~0.2 GB)  máy yếu / chỉ CPU
   hf     Grounding DINO tiny + OWLv2 base (HuggingFace)          (~2.0 GB)  Part 2 mục D, nên làm
+  sam1 / sam1-base / sam2   chỉ tải SAM 1 (mobile_sam, sam_b) hoặc SAM 2.1 (t, s, b)
   sam3   facebook/sam3 (gated)                                    (~3.5 GB)  tuỳ chọn, cần xin quyền
   all    core + hf
 YOLOE cần CLIP: lần chạy đầu ultralytics tự `pip install` CLIP từ git (cần git và mạng).
@@ -18,13 +19,16 @@ ROOT = Path(__file__).resolve().parent.parent
 SETS = {
     "core": ["yolo26m.pt", "yolo26m-seg.pt", "yoloe-26s-seg.pt", "sam2.1_b.pt"],
     "small": ["yolo26n.pt", "yolo26n-seg.pt", "yoloe-26s-seg.pt", "sam2.1_t.pt"],
+    "sam1": ["mobile_sam.pt"],            # SAM 1 bản nhẹ (~40 MB)
+    "sam1-base": ["sam_b.pt"],            # SAM 1 ViT-B (~375 MB)
+    "sam2": ["sam2.1_t.pt", "sam2.1_s.pt", "sam2.1_b.pt"],
 }
 HF = {"hf": ["IDEA-Research/grounding-dino-tiny", "google/owlv2-base-patch16-ensemble"], "sam3": ["facebook/sam3"]}
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--set", default="core", choices=["core", "small", "hf", "sam3", "all"])
+    ap.add_argument("--set", default="core", choices=["core", "small", "sam1", "sam1-base", "sam2", "hf", "sam3", "all"])
     a = ap.parse_args()
     models = ROOT / "models"
     models.mkdir(exist_ok=True)

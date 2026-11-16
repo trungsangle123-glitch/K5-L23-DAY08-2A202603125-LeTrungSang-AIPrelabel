@@ -20,9 +20,10 @@
 <<các lệnh prelabel.py / merge_prelabels.py>>
 ```
 
-## 3. Mask
+## 3. Mask (SAM là bắt buộc)
 
-- Segmenter: <<none / native / sam2 (sam2.1_b)>>; lý do: <<>>
+- Phiên bản SAM đã chọn: <<SAM 1 (mobile_sam / sam_b) / SAM 2.1 (t/s/b/l) / SAM 3>>; lý do chọn: <<chất lượng mask, tốc độ, RAM, quyền truy cập>>
+- Đã so với phiên bản nào khác (nếu có) và thấy gì: <<>>
 
 ## 4. Lỗi đã biết của recipe (không sửa được bằng ngưỡng)
 

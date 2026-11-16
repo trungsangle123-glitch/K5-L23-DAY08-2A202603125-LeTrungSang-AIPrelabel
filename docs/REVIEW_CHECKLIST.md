@@ -18,6 +18,8 @@ Hai loại lỗi của người duyệt: **bỏ qua** (máy không vẽ thì b�
 
 ## 2. Checklist bốn bước cho MỖI ảnh (thứ tự cố định)
 
+![Checklist review](assets/review_checklist.png)
+
 **Bước 0 — Quét ảnh trước.** Ẩn hết nhãn máy. Nhìn ảnh ~15 giây, tự đếm vật theo lớp (nhẩm: "6 người, 4 xe máy, 1 tuk-tuk, vài xe ở xa").
 Chỉ khi xong mới hiện nhãn máy.
 

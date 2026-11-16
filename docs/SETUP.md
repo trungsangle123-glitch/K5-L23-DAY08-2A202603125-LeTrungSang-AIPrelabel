@@ -50,10 +50,11 @@ Dùng `uv` (nhanh hơn, tuỳ chọn): `uv venv --python 3.12 && source .venv/bi
 
 ```bash
 python scripts/download_models.py --set core     # YOLO26m, YOLO26m-seg, YOLOE-26s-seg, SAM 2.1 base (~0.5 GB)
+python scripts/download_models.py --set sam1     # (tuỳ chọn) SAM 1 bản nhẹ mobile_sam (~40 MB); SAM bắt buộc, bạn chọn phiên bản
 python scripts/download_models.py --set hf       # Grounding DINO tiny + OWLv2 (~2 GB, cho Part 2 mục D)
 ```
 
-Máy yếu / chỉ CPU: dùng `--set small` (n-size + SAM 2.1 tiny). Khi đó mọi lệnh có `--size m` đổi thành `--size n`, và `--sam2 sam2.1_t.pt`.
+Máy yếu / chỉ CPU: dùng `--set small` (n-size + SAM 2.1 tiny). Khi đó mọi lệnh có `--size m` đổi thành `--size n`, và `--sam sam2.1_t.pt` (hoặc `mobile_sam.pt` của SAM 1 nếu máy rất yếu).
 
 Trọng số vào thư mục `models/` (không commit; đã có trong `.gitignore`). **YOLOE** lần chạy đầu sẽ tải thêm bộ mã hoá chữ (mobileclip) và cài CLIP từ git: cần mạng và `git`.
 
@@ -87,7 +88,10 @@ SAM 3 là model **gated** trên HuggingFace: phải xin quyền và đăng nhậ
 Chưa được cấp quyền? Bỏ qua mục E, ghi vào `model_log.csv` dòng `sam3` với `decision = skipped (chưa có quyền)`.
 Bạn vẫn đạt đủ yêu cầu bằng SAM 2.1.
 
-## 5. Máy không có GPU (CPU only)
+## 5. Máy không có GPU (CPU only) — hoặc dùng Google Colab
+
+**Colab (GPU T4 miễn phí) là lựa chọn tốt nhất cho máy yếu**: chạy model trên Colab, tải file nhãn về nạp vào CVAT trên máy bạn. Hướng dẫn: [COLAB.md](COLAB.md) (notebook `notebooks/day08_colab.ipynb`).
+Nếu không dùng Colab:
 
 - Dùng `--set small`, `--size n`, `--imgsz 640` (nhỏ hơn mặc định 1024, nhanh ~2.5×, nhưng bỏ sót vật nhỏ nhiều hơn: ghi nhận xét này vào `model_log.csv`).
 - Bỏ Grounding DINO và OWLv2 nếu quá chậm; YOLOE vẫn đủ làm open-vocabulary.
