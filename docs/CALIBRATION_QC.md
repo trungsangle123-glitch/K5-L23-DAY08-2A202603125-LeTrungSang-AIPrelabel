@@ -1,36 +1,23 @@
 # Calibration và QC (Part 6)
 
-Calibration = làm cho **bạn, máy và guideline** nhất quán, **có số đo và bằng chứng**. Part 6 gồm **ba bước làm theo thứ tự**.
+Calibration = làm cho **bạn, máy và guideline** nhất quán, **có số đo và bằng chứng**. Part 6 gồm **ba bước làm theo thứ tự** (45 phút).
 (Chọn ngưỡng theo lớp là việc của Part 3: xem [THRESHOLD.md](THRESHOLD.md).)
 
 | Bước | Làm gì | Sản phẩm |
 |---|---|---|
-| 1. Gán lại mù | bạn gán lại 8 ảnh không nhìn nhãn cũ, rồi so | `qc/self_check.md` |
-| 2. Calibration guideline | mỗi ca mơ hồ một quyết định, viết vào v1.1 | `calibration_decisions.csv`, `guideline_v1.1_calibrated.md` |
-| 3. QC và quyết định | kiểm mẫu, chọn Release / Hold / Rework | `qc/QC_REPORT.md` |
+| 1. Calibration guideline (20') | mỗi ca mơ hồ một quyết định, viết vào v1.1 | `calibration_decisions.csv`, `guideline_v1.1_calibrated.md` |
+| 2. QC (15') | kiểm mẫu 5 ảnh + ca khó | `qc_review.csv`, `qc_report_auto.md` |
+| 3. Báo cáo và quyết định (10') | chọn Release / Hold / Rework, viết REPORT | `REPORT.md` |
+
+(Gán lại mù để đo nhất quán của chính bạn: bài nâng cao, [ADVANCED.md](ADVANCED.md) mục 6.)
 
 ---
 
-## Bước 1. Gán lại mù (~25 phút)
-
-**Để làm gì:** kiểm bạn có nhất quán với chính mình không. Chỗ bạn lệch với mình là chỗ guideline mơ hồ hoặc bạn chưa nắm quy tắc.
-
-**Làm khi nào:** sau ≥ 60 phút kể từ lúc duyệt xong (hoặc hôm sau). Theo guideline **v1.0**; không mở lại nhãn cũ; không dùng AI.
-
-```bash
-python scripts/prepare_workdirs.py --selfcheck       # tạo work/tasks/selfcheck/ (8 ảnh batch, bỏ ảnh quá dày)
-# Tạo Task "selfcheck-blind" từ thư mục đó, gán tay, export -> submission/labels/self_check_blind.json
-python scripts/self_consistency.py --a submission/labels/batch_reviewed.json --b submission/labels/self_check_blind.json
-```
-
-**Đạt khi** cả ba điều kiện cùng đúng: IoU trung bình ≥ 0.85 · cùng lớp ≥ 95% · box không ghép được ≤ 10%.
-Mỗi dòng trong `self_check_cases.csv` là một ứng viên cho bước 2. (Có bạn học? Đổi file nhau rồi chạy `--a` của bạn, `--b` của họ: tuỳ chọn, cộng điểm phân tích.)
-
-## Bước 2. Calibration guideline (~25 phút)
+## Bước 1. Calibration guideline (~20 phút)
 
 **Để làm gì:** biến lỗi và chỗ mơ hồ đã thấy thành **quy tắc viết ra giấy**, để lần sau không tranh luận lại.
 
-**Gom ca từ năm nguồn:**
+**Gom ca từ các nguồn:**
 
 | Nguồn (`nguon`) | Lấy ở đâu |
 |---|---|
@@ -38,7 +25,7 @@ Mỗi dòng trong `self_check_cases.csv` là một ứng viên cho bước 2. (C
 | `can_review` | các box bạn đã tick `can_review` |
 | `loi_may` | lỗi lặp của máy: `deleted` / `added` cao ở một lớp; số "đổi lớp" trong `review_stats.md` |
 | `bay_lot` | bẫy bạn để lọt (`review_stats.md` mục 3) |
-| `self_check` | `self_check_cases.csv` ở bước 1 |
+| `self_check` | (nâng cao) `self_check_cases.csv` |
 
 **Mỗi ca đã quyết = một dòng** trong `submission/qc/calibration_decisions.csv`:
 
@@ -47,16 +34,16 @@ case_id,image,nguon,van_de,quyet_dinh,quy_tac_ghi_vao_guideline,phien_ban_guidel
 CAL-01,img_013|img_004,loi_may,"YOLO26 gọi tuk-tuk là car","luôn gán three_wheeler","mục 2: xe ba bánh có mui vẫn là three_wheeler",v1.1
 ```
 
-- **Tối thiểu 5 dòng**, có ít nhất một ca `loi_may` và một ca `cau_hoi_mo`.
+- **Tối thiểu 3 dòng**, có ít nhất một ca `loi_may` và một ca `cau_hoi_mo`.
 - Câu hỏi để lọc: **guideline mơ hồ** (cần sửa chữ) hay **bạn / máy làm sai** (không cần đổi guideline)? Chỉ trường hợp đầu mới vào v1.1.
 - Quyết định nào là quy tắc mới phải **thật sự nằm** trong `guideline_v1.1_calibrated.md` (copy v1.0, sửa tại chỗ; khung: [guideline/TEMPLATE_v1.1.md](../guideline/TEMPLATE_v1.1.md)), kèm ảnh ví dụ.
 - Quyết định làm đổi **nhãn đã gán** (ví dụ chuyển hẳn xe đạp điện sang `motorbike`)? Sửa trong CVAT, export `submission/labels/qc_fixed.json` (chỉ các ảnh đã sửa).
 
-## Bước 3. QC và quyết định (~30 phút)
+## Bước 2–3. QC, quyết định và báo cáo (~25 phút)
 
 ```bash
 python scripts/build_release.py                       # nhãn cuối của 24 ảnh batch (có áp qc_fixed.json nếu có)
-python scripts/qc_sample.py --n 8 --seed 42           # mẫu = mọi ảnh có can_review + 8 ảnh ngẫu nhiên
+python scripts/qc_sample.py --n 5 --seed 42           # mẫu = mọi ảnh có can_review + 5 ảnh ngẫu nhiên
 # mở work/qc/review/*.jpg (id từng vật in sẵn), điền submission/qc/qc_review.csv
 python scripts/qc_report.py                           # thêm --guideline-gap N nếu còn câu hỏi chưa chốt
 ```
@@ -68,9 +55,9 @@ python scripts/qc_report.py                           # thêm --guideline-gap N 
 
 ![Cây quyết định Hold, Rework, Release](assets/decision_tree.png)
 
-Rồi viết `submission/qc/QC_REPORT.md` (khuôn có sẵn trong file). Hai điều **bắt buộc** trong báo cáo:
+Rồi viết **`submission/REPORT.md` mục 7** (khuôn có sẵn). Hai điều **bắt buộc**:
 1. **Mọi tỉ lệ kèm mẫu số** (ví dụ `1/8 ảnh = 12.5%`, không chỉ `12.5%`).
-2. **Nói rõ giới hạn của mẫu nhỏ:** `qc_report_auto.md` có dòng "cận trên 95%". Với mẫu ~10 ảnh, ngưỡng 2% không thể được chứng minh.
+2. **Nói rõ giới hạn của mẫu nhỏ:** `qc_report_auto.md` có dòng "cận trên 95%". Với mẫu cỡ vài ảnh, ngưỡng 2% không thể được chứng minh.
 
 > Chọn **Rework** trung thực **không bị trừ điểm**. Điều bị trừ là báo **Release** khi số liệu không đạt.
 > Quyết định Rework: sửa lỗi, cập nhật nhãn (`qc_fixed.json`), chạy lại `build_release.py` và `qc_sample.py --force`, ghi vòng sau vào báo cáo.
@@ -88,7 +75,6 @@ Rồi viết `submission/qc/QC_REPORT.md` (khuôn có sẵn trong file). Hai đi
 | Accepted / edited / deleted | ÷ **box máy** | trạng thái của máy |
 | Added | ÷ **đối tượng sau duyệt** | máy sót bao nhiêu (≈ 1 − recall) |
 | Bắt bẫy | bẫy sửa đúng / tổng bẫy | ≥ 80% (≥ 10/12) |
-| IoU TB / cùng lớp (bước 1) | trên cặp box ghép được | 0.85 / 95% |
 
 **Hiểu từng số trong `review_stats.md`:**
 

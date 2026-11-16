@@ -7,7 +7,7 @@
 --neg x,y  : click âm (KHÔNG thuộc vật) [dùng nhiều lần được]
 --box x1,y1,x2,y2 : khung gợi ý (tuỳ chọn)
 Toạ độ là pixel trên ảnh gốc (mở ảnh bằng trình xem ảnh bất kỳ và rê chuột; hoặc thử rồi nhìn kết quả).
-Ghi <out>/mask_overlay.jpg (mask tô màu, chấm xanh = dương, chấm đỏ = âm) và in diện tích mask / số polygon.
+Ghi <out>/<name>.jpg (mask tô màu, chấm xanh = dương, chấm đỏ = âm) và in diện tích mask / số polygon.
 """
 from __future__ import annotations
 
@@ -38,6 +38,7 @@ def main():
     ap.add_argument("--sam", "--sam2", dest="sam", default="sam2.1_b.pt", help="mobile_sam.pt | sam_b.pt (SAM 1) | sam2.1_t/s/b/l.pt (SAM 2.1)")
     ap.add_argument("--device", default="auto")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--name", default="mask_overlay", help="tên file ảnh kết quả (không đuôi), ví dụ tuktuk_img013")
     a = ap.parse_args()
     path = IMAGES_DIR / a.image
     if not path.exists():
@@ -70,9 +71,9 @@ def main():
         d.rectangle(list(map(float, a.box.split(","))), outline="yellow", width=2)
     o = Path(a.out)
     o.mkdir(parents=True, exist_ok=True)
-    out.save(o / "mask_overlay.jpg", quality=90)
+    out.save(o / f"{a.name}.jpg", quality=90)
     polys = mask_to_polys(m.astype(np.uint8))
-    print(f"Mask: {int(m.sum())} px ({m.sum() / m.size * 100:.1f}% ảnh), {len(polys)} polygon -> {rel(o / 'mask_overlay.jpg')}")
+    print(f"Mask: {int(m.sum())} px ({m.sum() / m.size * 100:.1f}% ảnh), {len(polys)} polygon -> {rel(o / f'{a.name}.jpg')}")
 
 
 if __name__ == "__main__":

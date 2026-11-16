@@ -1,6 +1,6 @@
 """Lấy mẫu QC trên nhãn đã duyệt của tập batch và tạo phiếu kiểm.
 
-    python scripts/qc_sample.py --n 8 --seed 42
+    python scripts/qc_sample.py --n 5 --seed 42
 
 Mẫu = mọi ảnh có box tick `can_review` (ca khó bạn tự đánh dấu) + n ảnh ngẫu nhiên trong phần còn lại.
 Nguồn: submission/release/final_det.coco.json (chạy build_release.py trước; đã gồm bản sửa qc_fixed nếu có).
@@ -22,7 +22,7 @@ def truthy(v) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--src", default=str(SUB / "release" / "final_det.coco.json"), help="mặc định: nhãn cuối từ build_release.py")
-    ap.add_argument("--n", type=int, default=8)
+    ap.add_argument("--n", type=int, default=5)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--force", action="store_true", help="ghi đè qc_review.csv đã có (CẨN THẬN: mất phần đã điền)")
     a = ap.parse_args()

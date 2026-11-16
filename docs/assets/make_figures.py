@@ -93,10 +93,10 @@ def roadmap():
     W, H = 1600, 360
     im = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(im)
-    items = [("0", "Cài đặt", "30–45'", "venv · model\nCVAT · (Colab)", GRAY), ("1", "Gold", "45–60'", "gán tay 6 ảnh\nKHÔNG AI", GREEN),
-             ("2", "Tour model", "60–90'", "YOLO26 · SAM\nYOLOE · …", PURPLE), ("3", "Pilot", "45–60'", "duyệt 6 ảnh\nngưỡng theo lớp", ORANGE),
-             ("4", "Review", "60–90'", "pre-label + bẫy\ncheck-list 4 bước", RED), ("5", "Mask", "45–60'", "SAM → polygon\nCVAT trực tiếp", TEAL),
-             ("6", "Calibration\n+ QC", "60–90'", "guideline v1.1\nRelease/Hold/Rework", NAVY)]
+    items = [("0", "Cài đặt", "TRƯỚC lớp", "venv · 3 model\nCVAT · (Colab)", GRAY), ("1", "Gold", "25'", "gán tay 4 ảnh\nKHÔNG AI", GREEN),
+             ("2", "Tour 3 model", "35'", "YOLO26 · YOLOE\nSAM", PURPLE), ("3", "Ngưỡng", "15'", "theo lớp\ntrên gold", ORANGE),
+             ("4", "Review", "80'", "24 ảnh + 12 bẫy\ncheck-list 4 bước", RED), ("5", "Mask SAM", "20'", "3 vật khó\nclick dương/âm", TEAL),
+             ("6", "Calibration\n+ QC + báo cáo", "45'", "guideline v1.1\nRelease/Hold/Rework", NAVY)]
     n = len(items)
     step = (W - 280) / (n - 1)
     d.line([(140, 120), (W - 140, 120)], fill="#d5dbe3", width=8)
@@ -112,7 +112,7 @@ def roadmap():
         text(d, (cx, yy), t, 20, c, True, "ma")
         for k, line in enumerate(sub.split("\n")):
             text(d, (cx, yy + 32 + k * 24), line, 18, GRAY, False, "ma")
-    text(d, (60, 20), "Lộ trình 7 Part  (tổng 7–10 giờ, chia 3 buổi)", 26, NAVY, True)
+    text(d, (60, 20), "Lộ trình 7 Part  (4 giờ trên lớp + cài đặt làm trước)", 26, NAVY, True)
     im.save(HERE / "roadmap.png")
 
 

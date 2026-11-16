@@ -18,12 +18,12 @@ flowchart LR
 
 | Part | Làm ở đâu |
 |---|---|
-| 0 Cài đặt | máy bạn: venv + `check_env.py` (không cần model nặng); Colab: chạy ô 0–2 của notebook |
+| 0 Cài đặt | máy bạn: chỉ CVAT + git (**không cần cài model**); Colab: chạy ô 0–2 của notebook |
 | 1 Gold gán tay | **máy bạn + CVAT** (không cần model) |
 | 2 Tour model | **Colab** (ô 3), xem `viz/` ngay trong notebook; ghi `model_log.csv` ở máy bạn |
-| 3 Pilot | Colab (ô 4–5) tạo `merged_pilot/pre.coco.json` → tải về → CVAT; **`threshold_sweep.py` chạy ở máy bạn** |
-| 4 Batch + bẫy | Colab (ô 6) gộp; `inject_traps.py` nên chạy ở máy bạn (hạt giống + đáp án nằm trong repo bạn) |
-| 5 Mask | Colab (ô 7): chọn `SAM = ...` (SAM 1 / 2.1) hoặc SAM 3 qua Secrets |
+| 3 Ngưỡng | Colab (ô 4–5) chạy mọi ảnh + gộp gold → tải về; **`threshold_sweep.py` chạy ở máy bạn** |
+| 4 Batch + bẫy | Colab (ô 6) gộp theo ngưỡng của bạn; `inject_traps.py` nên chạy ở máy bạn (hạt giống + đáp án nằm trong repo bạn) |
+| 5 Mask SAM | `sam2_points.py` chạy được trên Colab (ô 7) hoặc máy bạn; chọn phiên bản SAM bằng `--sam` |
 | 6 Calibration, QC | máy bạn (script nhẹ, không cần GPU) |
 
 ## Từng bước

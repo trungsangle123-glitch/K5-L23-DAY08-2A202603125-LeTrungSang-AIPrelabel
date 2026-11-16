@@ -1,7 +1,7 @@
-# Cài đặt môi trường (Part 0)
+# Cài đặt môi trường (Part 0: làm TRƯỚC buổi học)
 
 Mục tiêu: sau trang này, `python scripts/check_env.py` in **SẴN SÀNG** và bạn chạy được YOLO26 trên một ảnh.
-Mất khoảng 20–30 phút (phần lớn là chờ tải). Làm ở **thư mục gốc của repo**.
+Mất khoảng 30–45 phút (phần lớn là chờ tải) nên **làm ở nhà trước buổi học**, không tính vào 4 giờ. Làm ở **thư mục gốc của repo**. Máy yếu: bỏ qua trang này, dùng [Google Colab](COLAB.md).
 
 ## 0. Bạn cần gì
 
@@ -9,7 +9,7 @@ Mất khoảng 20–30 phút (phần lớn là chờ tải). Làm ở **thư m�
 |---|---|---|
 | Python **3.10 – 3.12** | có | **3.13 trở lên: không dùng** (thiếu bản cài sẵn của torch / opencv / ultralytics); tạo venv bằng `py -3.12` (Windows) hoặc `python3.12`; chưa có thì cài 3.12 từ python.org. Kiểm tra: `python3 --version` |
 | `git` | có | YOLOE tự cài CLIP từ GitHub qua git |
-| ~8 GB ổ trống | có | trọng số ~0.5 GB (core) đến ~6 GB (đủ HF + SAM 3), cộng thư viện ~4 GB |
+| ~8 GB ổ trống | có | trọng số bài chính ~0.35 GB (bài nâng cao thêm ~6 GB), cộng thư viện ~4 GB |
 | GPU | **không** | Có CUDA hay Apple MPS thì nhanh hơn; CPU vẫn làm được (xem mục 5) |
 | CVAT | có | cvat.ai (cloud) **hoặc** CVAT chạy bằng Docker trên máy bạn (xem [CVAT_AI.md](CVAT_AI.md)) |
 | Tài khoản HuggingFace | tuỳ chọn | chỉ cho SAM 3 (mục 4) |
@@ -49,9 +49,9 @@ Dùng `uv` (nhanh hơn, tuỳ chọn): `uv venv --python 3.12 && source .venv/bi
 ## 2. Tải trọng số
 
 ```bash
-python scripts/download_models.py --set core     # YOLO26m, YOLO26m-seg, YOLOE-26s-seg, SAM 2.1 base (~0.5 GB)
+python scripts/download_models.py --set core     # YOLO26m, YOLOE-26s-seg, SAM 2.1 base (~0.35 GB): ĐỦ cho bài chính
 python scripts/download_models.py --set sam1     # (tuỳ chọn) SAM 1 bản nhẹ mobile_sam (~40 MB); SAM bắt buộc, bạn chọn phiên bản
-python scripts/download_models.py --set hf       # Grounding DINO tiny + OWLv2 (~2 GB, cho Part 2 mục D)
+# Nâng cao (không bắt buộc): --set hf (Grounding DINO + OWLv2, ~2 GB) · --set sam3
 ```
 
 Máy yếu / chỉ CPU: dùng `--set small` (n-size + SAM 2.1 tiny). Khi đó mọi lệnh có `--size m` đổi thành `--size n`, và `--sam sam2.1_t.pt` (hoặc `mobile_sam.pt` của SAM 1 nếu máy rất yếu).
@@ -73,7 +73,7 @@ python scripts/prelabel.py --model yolo26 --size m --images img_011.jpg --conf 0
 Kỳ vọng: in vài dòng "Số box theo lớp: person=…, motorbike=…, car=…" và tạo `work/smoke/viz/img_011.jpg` (mở ra xem: có box màu chồng lên ảnh).
 Lỗi thường gặp ở mục 6.
 
-## 4. SAM 3 (tuỳ chọn, không bắt buộc để đạt điểm)
+## 4. SAM 3 (nâng cao, không bắt buộc)
 
 SAM 3 là model **gated** trên HuggingFace: phải xin quyền và đăng nhập mới tải được.
 
@@ -83,7 +83,7 @@ SAM 3 là model **gated** trên HuggingFace: phải xin quyền và đăng nhậ
    ```bash
    hf auth login           # hoặc đặt biến môi trường HF_TOKEN (bash: export HF_TOKEN=...; PowerShell: $env:HF_TOKEN="...")
    ```
-4. `python scripts/download_models.py --set sam3` rồi `python scripts/prelabel.py --model sam3 ...` (xem [MODELS.md](MODELS.md), mục E).
+4. `python scripts/download_models.py --set sam3` rồi `python scripts/prelabel.py --model sam3 ...` (xem [ADVANCED.md](ADVANCED.md) mục 2).
 
 Chưa được cấp quyền? Bỏ qua mục E, ghi vào `model_log.csv` dòng `sam3` với `decision = skipped (chưa có quyền)`.
 Bạn vẫn đạt đủ yêu cầu bằng SAM 2.1.

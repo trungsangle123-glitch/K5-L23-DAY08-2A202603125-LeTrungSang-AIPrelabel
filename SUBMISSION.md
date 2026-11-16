@@ -28,51 +28,43 @@ README.md                          # dòng đầu: # Day 08 Lab — <MSHV> - <H�
 STUDENT.md                         # thông tin + kết quả tóm tắt
 data/ATTRIBUTION.csv               # giữ nguyên
 submission/
-├── taxonomy.json                  # khớp guideline v1.1; KHÔNG đổi mục rules
-├── recipe.md                      # recipe pre-label cuối (model, prompt, ngưỡng, segmenter, vì sao)
-├── model_log.csv                  # >= 6 lần chạy, >= 3 model, có nhận xét
-├── time_log.csv                   # thời gian thật: gold_manual, pilot_review, batch_review, seg_review
-├── REPORT.md                      # báo cáo chính (6 mục)
-├── individual_note.md             # ghi chú cá nhân, công cụ AI đã dùng
+├── taxonomy.json                  # KHÔNG đổi mục rules
+├── REPORT.md                      # báo cáo chính (8 mục): recipe, error profile, bẫy, mask, calibration, QC + quyết định, ghi chú cá nhân
+├── model_log.csv                  # >= 4 lần chạy, >= 3 model (YOLO26, YOLOE, SAM), có nhận xét
+├── time_log.csv                   # thời gian thật: gold_manual, batch_review
 ├── guidelines/
-│   └── guideline_v1.1_calibrated.md
+│   └── guideline_v1.1_calibrated.md   # CHỈ phần bổ sung so với v1.0
 ├── prelabel/
-│   ├── pre_traps.coco.json        # file đã nạp vào CVAT (batch + gold, có bẫy)
-│   ├── traps_key.json             # đáp án bẫy
-│   └── seg_pre.coco.json          # pre-label mask của 8 ảnh seg
+│   ├── pre_traps.coco.json        # file đã nạp vào CVAT (24 ảnh batch + 4 gold, có bẫy)
+│   └── traps_key.json             # đáp án bẫy
 ├── labels/
-│   ├── gold_manual.json
-│   ├── pilot_reviewed.json
-│   ├── batch_reviewed.json
-│   ├── seg_reviewed.json
-│   ├── self_check_blind.json
-│   └── qc_fixed.json              # (tuỳ chọn) ảnh sửa sau QC
+│   ├── gold_manual.json           # 4 ảnh gán tay
+│   └── batch_reviewed.json        # 24 ảnh sau review
+├── masks/                         # >= 3 ảnh mask SAM (sam2_points.py)
 ├── release/                       # python scripts/build_release.py
 │   ├── final_det.coco.json
 │   ├── release_summary.csv
 │   └── release_manifest.json
 └── qc/
     ├── threshold_sweep.{csv,md,png}
-    ├── review_stats.{json,md}, review_stats_seg.{json,md}
-    ├── self_check.{json,md}, self_check_cases.csv
-    ├── calibration_decisions.csv  # mỗi quyết định một dòng
-    ├── qc_sample.csv, qc_review.csv, qc_report_auto.md
-    └── QC_REPORT.md
+    ├── review_stats.{json,md}
+    ├── calibration_decisions.csv  # >= 3 dòng, mỗi quyết định một dòng
+    └── qc_sample.csv, qc_review.csv, qc_report_auto.md
 ```
 
+Bài nâng cao (tuỳ chọn) có thể thêm `labels/pilot_reviewed.json`, `labels/seg_reviewed.json`, `labels/self_check_blind.json`, `qc/self_check.*`, `qc/review_stats_seg.*`, `prelabel/seg_pre.coco.json`.
 **Không** commit: `work/`, `models/`, `*.pt`, token, mật khẩu, ảnh ngoài bộ dữ liệu.
 
 ## Checklist trước khi nộp
 
 - [ ] Repo **public**, tên đúng quy tắc, mở được khi chưa đăng nhập.
 - [ ] `README.md` tiêu đề đúng `MSHV - Họ và tên`; `STUDENT.md` điền đủ, kể cả kết quả tóm tắt.
-- [ ] ≥ 5 commit bằng tài khoản của bạn, theo từng Part.
+- [ ] ≥ 4 commit bằng tài khoản của bạn, theo từng Part.
 - [ ] `python scripts/validate_labels.py --all` sạch.
-- [ ] `taxonomy.json` khớp `guideline_v1.1_calibrated.md`; mục `rules` không bị đổi.
-- [ ] `model_log.csv`, `time_log.csv` là số thật; mỗi dòng log có nhận xét.
-- [ ] `calibration_decisions.csv` ≥ 5 dòng; nội dung đã vào `guideline_v1.1_calibrated.md`.
-- [ ] `QC_REPORT.md` điền đủ, tỉ lệ kèm mẫu số, có quyết định Release / Hold / Rework và giới hạn của mẫu nhỏ.
-- [ ] `REPORT.md` có 3 quy tắc giảm thiên kiến và phần so sánh offline vs trực tiếp.
+- [ ] `model_log.csv` (có dòng **SAM**, ghi rõ phiên bản) và `time_log.csv` là số thật; mỗi dòng log có nhận xét.
+- [ ] `calibration_decisions.csv` ≥ 3 dòng; nội dung đã vào `guideline_v1.1_calibrated.md`, mỗi ca khó có ảnh ví dụ.
+- [ ] `REPORT.md` điền đủ 8 mục: tỉ lệ kèm mẫu số, quyết định Release / Hold / Rework, giới hạn mẫu nhỏ, 3 quy tắc giảm thiên kiến.
+- [ ] `submission/masks/` có ≥ 3 ảnh.
 - [ ] `python scripts/check_submission.py` không còn `LỖI`.
 - [ ] Không có token, `work/`, trọng số, hay dữ liệu ngoài phạm vi.
 - [ ] Đã nộp link repo trước hạn.

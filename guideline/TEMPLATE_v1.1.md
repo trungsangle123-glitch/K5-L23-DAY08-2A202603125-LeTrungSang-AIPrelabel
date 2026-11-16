@@ -1,18 +1,23 @@
-# Label contract — Phố châu Á (v1.1, calibrated) — <MSHV - Họ tên>
+# Label contract — Phố châu Á — BỔ SUNG v1.1 — <<MSHV - Họ tên>>
 
-> Copy toàn bộ nội dung `guideline_v1.0_label_contract.md` vào file này rồi **sửa tại chỗ**:
-> chốt 7 câu hỏi ở mục 6 (hoặc nói rõ câu nào bạn chưa chốt và vì sao), thêm quy tắc mới rút ra từ lỗi của máy / lỗi của bạn.
-> Giữ đủ **5 phần**: (1) mục đích, (2) lớp + thuộc tính, (3) quy tắc, (4) ca khó, (5) QC + phiên bản.
+> **Chỉ viết phần thay đổi so với v1.0** (không copy cả file). Chốt các câu hỏi mở ở mục 6 của v1.0 (hoặc nói rõ câu nào chưa chốt, vì sao)
+> và thêm quy tắc mới rút ra từ lỗi của máy / lỗi của bạn. Mỗi ca khó **có ảnh ví dụ** (`img_0xx`) và khớp một dòng trong `qc/calibration_decisions.csv`.
 
-## Bảng ca khó mới trong v1.1 (mỗi dòng phải có ảnh ví dụ)
+## 1. Câu hỏi mở đã chốt (từ mục 6 của v1.0)
 
-| Ảnh | Tình huống | Máy làm gì (model nào) | Quyết định của bạn | Quy tắc mới (đã vào mục nào) |
+| # | Câu hỏi | Quyết định | Ảnh ví dụ | `case_id` |
 |---|---|---|---|---|
-| img_0xx | | | | |
+| <<1>> | <<xe đạp điện: bicycle hay motorbike?>> | <<>> | <<img_0xx>> | <<CAL-01>> |
 
-## Lịch sử thay đổi
+## 2. Ca khó mới (từ lỗi của máy, bẫy lọt, box `can_review`)
 
-| Phiên bản | Thay đổi | Lý do (ca nào, `case_id` trong calibration_decisions.csv) |
+| Ảnh | Tình huống | Máy làm gì (model nào) | Quyết định của bạn | Quy tắc mới (vào mục nào của v1.0) |
+|---|---|---|---|---|
+| <<img_0xx>> | <<>> | <<>> | <<>> | <<>> |
+
+## 3. Lịch sử thay đổi
+
+| Phiên bản | Thay đổi | Lý do (ca nào, `case_id`) |
 |---|---|---|
 | v1.0 | Bản giảng viên | — |
-| v1.1 | | |
+| v1.1 | <<tóm tắt các thay đổi ở mục 1–2>> | <<>> |

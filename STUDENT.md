@@ -15,6 +15,5 @@
 - So với gold: precision / recall của **máy** <<... / ...>>
 - Bắt bẫy: <<.../12 = ...%>>
 - Thời gian: gán tay <<... phút/ảnh>>; duyệt có pre-label <<... phút/ảnh>>
-- Nhất quán gán lại mù: IoU TB <<...>>, cùng lớp <<...%>> (mẫu số: <<... cặp box>>)
 - Lỗi QC: <<...% theo ảnh (.../...)>>, <<...% theo đối tượng (.../...)>>
 - **Quyết định:** <<Release / Hold / Rework>> — lý do một dòng: <<...>>

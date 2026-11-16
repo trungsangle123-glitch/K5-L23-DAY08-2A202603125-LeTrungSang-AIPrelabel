@@ -1,36 +1,25 @@
-# Checkpoints — Day 08
+# Checkpoints — Day 08 (240 phút trên lớp)
 
-Bài cá nhân, dự kiến **7–10 giờ** (nên chia 3 buổi). Giờ trong bảng là mốc cho người làm nhanh, máy có GPU. Mốc tính từ lúc bắt đầu, là điểm **tự kiểm tra**, không phải hạn nộp. Deadline do giảng viên/coach thông báo.
+Mốc tính từ lúc bắt đầu buổi, là điểm **tự kiểm tra**, không phải hạn nộp. Cài đặt (Part 0) làm **trước** buổi học. Deadline do giảng viên/coach thông báo.
 
 | Mốc | Mục tiêu | Tự kiểm tra |
 |---|---|---|
-| 0:25 | **CP0** Cài đặt | `check_env.py` SẴN SÀNG; chạy được YOLO26 trên một ảnh; Project CVAT có 8 nhãn |
-| 1:15 | **CP1** Gold | `gold_manual.json` qua `validate_labels`; chưa hề xem pre-label của 6 ảnh gold; có `time_log` |
-| 2:45 | **CP2** Tour model | `model_log.csv` ≥ 6 dòng, ≥ 3 model, có nhận xét; đã chạy `--split all --conf 0.05` |
-| 3:40 | **CP3** Pilot | `pilot_reviewed.json`; `threshold_sweep.md` có ngưỡng theo lớp |
-| 3:50 | Nghỉ | |
-| 5:00 | **CP4** Review | `batch_reviewed.json`; `review_stats.md` có bắt bẫy % và precision / recall của máy so với gold |
-| 5:50 | **CP5** Segmentation | `seg_reviewed.json` có polygon; đã thử một cách AI trực tiếp trong CVAT |
-| 7:00 | **CP6** Calibration + QC + nộp | `guideline_v1.1`, `QC_REPORT.md` có quyết định; `check_submission.py` sạch; đã nộp link |
+| Trước lớp | **CP0** Cài đặt | `check_env.py` SẴN SÀNG (hoặc Colab chạy được); Project CVAT có 8 nhãn; đã đọc label contract |
+| 0:25 | **CP1** Gold | `gold_manual.json` qua `validate_labels` (4 ảnh); chưa hề xem pre-label của 4 ảnh gold; có `time_log` |
+| 1:00 | **CP2** Tour model | `model_log.csv` ≥ 4 dòng có nhận xét (YOLO26, YOLOE, **SAM**); đã chạy `--split all --conf 0.05` |
+| 1:15 | **CP3** Ngưỡng | `threshold_sweep.md` có ngưỡng theo lớp |
+| 1:25 | Nghỉ 10' | |
+| 2:45 | **CP4** Review | `batch_reviewed.json` (24 ảnh); `review_stats.md` có bắt bẫy % |
+| 3:05 | **CP5** Mask | ≥ 3 ảnh trong `submission/masks/` |
+| 3:50 | **CP6** Calibration + QC | `calibration_decisions.csv` ≥ 3, `guideline_v1.1`, `REPORT.md` có quyết định |
+| 4:00 | Nộp | `check_submission.py` sạch; đã nộp link |
 
-## Chi tiết từng checkpoint
+## Cần hiểu ở mỗi mốc
+- **CP1:** vì sao gold phải gán **trước** khi thấy máy? Neo nhãn làm sai số đo nào?
+- **CP2:** vì sao YOLO26 gọi tuk-tuk là `car`? Open-vocabulary khác closed-set ở đâu?
+- **CP3:** vì sao chọn ngưỡng **theo lớp**? "Điểm 0.9" có phải "90% đúng" không? Chọn và chấm trên cùng gold gây thiên lệch gì?
+- **CP4:** `accepted` cao nhưng bắt bẫy thấp nghĩa là gì? Lỗi nào của máy **không hiện** trên điểm số?
+- **CP5:** "một click, ba mask": ai quyết mask gồm gì? Mask đúng có cứu được nhãn lớp sai không?
+- **CP6:** guideline mơ hồ khác "tôi làm sai" ở đâu? Vì sao 0 lỗi trong vài ảnh chưa chứng minh "dưới 2%"?
 
-### CP1 · Cần hiểu
-Vì sao gold phải gán **trước** khi thấy máy? Neo nhãn nghĩa là gì và nó làm sai số đo nào?
-
-### CP2 · Cần hiểu
-Vì sao YOLO26 gọi tuk-tuk là `car`? Open-vocabulary khác closed-set ở điểm nào, và chữ prompt ảnh hưởng thế nào?
-
-### CP3 · Cần hiểu
-Vì sao chọn ngưỡng **theo lớp**, bằng tập **pilot** chứ không bằng gold? "Điểm tin cậy 0.9" có phải "90% đúng" không?
-
-### CP4 · Cần hiểu
-`accepted` cao nhưng bắt bẫy thấp nghĩa là gì? Lỗi nào của máy **không hiện** trên điểm số (bỏ sót)? Vì sao precision / recall của máy đo trên **gold** đáng tin hơn trên chính nhãn bạn vừa duyệt?
-
-### CP5 · Cần hiểu
-"Một click, ba mask": ai quyết mask gồm gì (người lái? hàng hoá?)? Vì sao mask đúng không cứu được nhãn lớp sai?
-
-### CP6 · Cần hiểu
-Tầng calibration nào sửa **guideline**, tầng nào sửa **người**? Vì sao 0 lỗi trong 10 ảnh mẫu chưa chứng minh "dưới 2%"?
-
-Chi tiết lệnh xem [GUIDE.md](GUIDE.md). Nếu CVAT chậm, mỗi người có thể cài CVAT local (Docker) hoặc dùng tài khoản cvat.ai riêng từ trước buổi học.
+Chi tiết lệnh: [GUIDE.md](GUIDE.md). Bài nâng cao: [docs/ADVANCED.md](docs/ADVANCED.md).

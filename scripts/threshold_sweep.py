@@ -1,9 +1,8 @@
-"""Quét ngưỡng tin cậy THEO TỪNG LỚP trên tập pilot, để chọn ngưỡng có cơ sở (thay vì đoán 0.5).
+"""Quét ngưỡng tin cậy THEO TỪNG LỚP trên nhãn gán tay (gold), để chọn ngưỡng có cơ sở (thay vì đoán 0.5).
 
-    # 1) chạy pre-label ở ngưỡng THẤP trên pilot (0.05) bằng chính recipe bạn định dùng
-    # 2) duyệt pilot trong CVAT -> export submission/labels/pilot_reviewed.json (nhãn chuẩn của pilot)
-    python scripts/threshold_sweep.py --pred work/prelabel/merged_pilot/pre.coco.json \
-        --gold submission/labels/pilot_reviewed.json
+    # pre-label đã gộp ở ngưỡng thấp (0.10) cho ảnh gold, và nhãn gán tay của bạn:
+    python scripts/threshold_sweep.py --pred work/prelabel/merged_gold/pre.coco.json \
+        --gold submission/labels/gold_manual.json
 
 Với mỗi lớp và mỗi ngưỡng t: tính precision / recall / F1 (IoU >= match_iou, cùng lớp).
 Gợi ý ngưỡng theo lớp = ngưỡng CAO NHẤT mà recall còn >= --recall-target (ít box thừa nhất trong khi không bỏ sót thêm).
@@ -20,7 +19,7 @@ from common import SUB, die, load_coco, load_taxonomy, match_objects, rel, split
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--pred", required=True, nargs="+", help="một hoặc nhiều pre.coco.json chạy ở ngưỡng thấp (0.05), vd. YOLO26 + YOLOE")
-    ap.add_argument("--gold", required=True, help="nhãn chuẩn của pilot (export CVAT sau khi duyệt)")
+    ap.add_argument("--gold", required=True, help="nhãn chuẩn: nhãn gán tay (gold_manual.json), hoặc pilot_reviewed.json ở bài nâng cao")
     ap.add_argument("--recall-target", type=float, help="mặc định lấy từ taxonomy.rules.recall_target")
     ap.add_argument("--step", type=float, default=0.05)
     ap.add_argument("--out", default=str(SUB / "qc" / "threshold_sweep"))
@@ -36,8 +35,8 @@ def main():
     pred = _Merged()
     imgs = sorted(n for n in gold.images if n in pred.images)
     if not imgs:
-        die("Hai file không có ảnh chung. --pred phải chạy trên cùng ảnh pilot với --gold.")
-    ths = [round(0.10 + i * a.step, 2) for i in range(int(round((0.95 - 0.10) / a.step)) + 1)]  # sàn 0.10: nhãn chuẩn pilot được dựng từ pre-label ngưỡng 0.10, dưới đó không đo được recall
+        die("Hai file không có ảnh chung. --pred phải chạy trên cùng ảnh với --gold.")
+    ths = [round(0.10 + i * a.step, 2) for i in range(int(round((0.95 - 0.10) / a.step)) + 1)]  # sàn 0.10: pre-label được gộp ở ngưỡng 0.10, dưới đó không có dữ liệu
     rows, best = [], {}
     for cls in tax.object_classes:
         n_gold = sum(1 for n in imgs for o in gold.objects[n] if o.cls == cls)
@@ -62,7 +61,7 @@ def main():
                          "recall": round(rc, 3), "f1": round(f1, 3), "n_gold": n_gold})
         ok = [s for s in series if s[5] >= tgt]
         if n_gold == 0:
-            best[cls] = (None, f"không có vật {cls} trong pilot -> không chọn được ngưỡng, dùng giá trị mặc định")
+            best[cls] = (None, f"không có vật {cls} trong ảnh gold -> không chọn được ngưỡng, dùng giá trị mặc định")
         elif ok:
             s = max(ok, key=lambda s: s[0]); best[cls] = (s[0], f"recall {s[5] * 100:.0f}% (>= {tgt * 100:.0f}%), precision {s[4] * 100:.0f}%")
         else:
@@ -88,13 +87,13 @@ def main():
         fig.tight_layout(); fig.savefig(str(out) + ".png", dpi=110); plt.close(fig)
     except Exception as e:  # noqa
         print(f"(không vẽ được biểu đồ: {e})")
-    L = ["# Quét ngưỡng theo lớp (pilot)", "", f"Mục tiêu recall: {tgt * 100:.0f}%. Ảnh pilot: {len(imgs)}.", "",
+    L = ["# Quét ngưỡng theo lớp", "", f"Mục tiêu recall: {tgt * 100:.0f}%. Ảnh dùng để quét: {len(imgs)}.", "",
          "| Lớp | Ngưỡng gợi ý | Lý do |", "|---|---|---|"]
     for c, (t, why) in best.items():
         L.append(f"| {c} | {'(mặc định)' if t is None else t} | {why} |")
     thr_arg = ",".join(f"{c}={t}" for c, (t, _) in best.items() if t is not None)
     L += ["", "Dán vào lệnh prelabel: `--thr \"" + thr_arg + "\"`", "",
-          "Lưu ý: nhãn chuẩn pilot dựng từ pre-label ngưỡng 0.10 nên vật có điểm < 0.10 vắng mặt trong GT (recall thật thấp hơn); pilot chỉ có vài ảnh -> ngưỡng là ước lượng thô; lớp có ít vật (xem n_gold) thì kết luận yếu."]
+          "Lưu ý: bạn chọn ngưỡng trên chính nhãn gold, nên precision / recall của máy trên gold ở ngưỡng đã chọn là con số **lạc quan** (chọn và chấm trên cùng dữ liệu); chỉ có vài ảnh -> ngưỡng là ước lượng thô; lớp có ít vật (xem n_gold) thì kết luận yếu."]
     text = "\n".join(L) + "\n"
     Path(str(out) + ".md").write_text(text, encoding="utf8")
     print(text)

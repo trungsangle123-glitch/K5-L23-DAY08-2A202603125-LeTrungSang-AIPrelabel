@@ -5,7 +5,7 @@
 > Đừng sửa file này: copy sang `submission/guidelines/guideline_v1.1_calibrated.md` rồi sửa bản của bạn.
 
 - Phiên bản: v1.0
-- Loại nhãn: **detection** (bounding box) cho cả 24 + 6 + 6 ảnh; **segmentation** (polygon / mask theo vật) cho 8 ảnh `seg`
+- Loại nhãn: **detection** (bounding box) cho 4 + 24 ảnh (gold + batch); **mask** (SAM) cho 3 vật khó ở Part 5 (bài nâng cao: polygon cho 8 ảnh `seg`)
 - Công cụ: CVAT. Xuất COCO 1.0
 
 ---
@@ -51,7 +51,7 @@
 6. **Vật quá nhỏ**: box cao < **20 px** → không vẽ từng vật. Nếu là cả cụm nhỏ nằm sát nhau (≥ 5 vật) thì vẽ **một** `ignore_region` bao cụm.
 7. **Hình in, tượng, phản chiếu, ảnh trên biển quảng cáo**: không gán.
 
-### 4.2 Mask / polygon (segmentation, chỉ 8 ảnh `seg`)
+### 4.2 Mask / polygon (Part 5: 3 vật; nâng cao: 8 ảnh `seg`)
 
 1. Polygon bám **đường biên của phần nhìn thấy**; đỉnh đủ dày để lệch biên ≤ ~3 px, không cần chi tiết nhỏ hơn bánh xe / tay lái.
 2. **Lỗ thủng** (khoảng trống nhìn thấy xuyên qua khung xích lô, giữa tay và thân người): **không** vẽ lỗ nếu lỗ nhỏ hơn ~5% diện tích vật; lỗ lớn thì bỏ ra khỏi polygon.

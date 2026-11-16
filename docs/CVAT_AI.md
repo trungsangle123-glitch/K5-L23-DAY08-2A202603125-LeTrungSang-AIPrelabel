@@ -9,7 +9,7 @@ Bản CVAT trong slide là **2.81**. Tên nút / menu giao diện dưới đây 
 | **A. Offline → import** (mặc định của lab) | Chạy model bằng `scripts/prelabel.py` trên máy bạn → file COCO / XML → **Upload annotations** vào Task | luôn dùng được, kiểm soát được từng tham số, lặp lại được | cvat.ai, CVAT Docker, mọi hệ điều hành |
 | **B. Trực tiếp trong CVAT** | B1: công cụ **AI Tools** (Interactor SAM) bấm ngay trên ảnh • B2: **Automatic annotation** bằng model có sẵn trong CVAT • B3: model **của bạn** nối vào CVAT bằng `cvat-cli` | B1: vài vật khó cần mask • B2/B3: gán cả Task không cần file trung gian | B1/B2 tuỳ gói cvat.ai hoặc CVAT tự cài có serverless; B3: cvat.ai và CVAT Docker |
 
-> **Bắt buộc:** Part 3–5 nạp nhãn bằng **cách A** (để có file `pre_traps` đo được). Part 5 yêu cầu **thử ít nhất một** trong B1 / B3 và ghi kết quả trung thực (kể cả không chạy được: Apple Silicon hoặc gói miễn phí có thể không chạy B1/B2; B3 thì chạy được hầu hết nơi).
+> **Bắt buộc:** Part 4 nạp nhãn bằng **cách A** (để có file `pre_traps` đo được). Cách B (trực tiếp trong CVAT) là **tuỳ chọn** trong 4 giờ: nếu có thời gian, thử B1 ở Part 5 hoặc B3 ở bài nâng cao.
 > Nhớ: máy chỉ **đề xuất**; mọi cách đều phải đi qua checklist review ([REVIEW_CHECKLIST.md](REVIEW_CHECKLIST.md)).
 
 ---
@@ -34,14 +34,13 @@ Tên nhãn trong CVAT **phải trùng từng chữ** với `taxonomy.json` (scri
 python scripts/prepare_workdirs.py
 ```
 
-Sinh `work/tasks/{gold,pilot,review,seg}/`. Mỗi thư mục là **một Task** (cùng Project):
+Sinh `work/tasks/{gold,review}/` (thêm `pilot`, `seg`, `selfcheck` nếu chạy `--advanced`). Mỗi thư mục là **một Task** (cùng Project):
 
 | Task | Thư mục ảnh | Ảnh | Dùng ở |
 |---|---|---|---|
-| `gold-manual` | `work/tasks/gold/` | 6 | Part 1 (gán tay, **không AI**) |
-| `pilot` | `work/tasks/pilot/` | 6 | Part 3 |
+| `gold-manual` | `work/tasks/gold/` | 4 | Part 1 (gán tay, **không AI**) |
 | `batch-review` | `work/tasks/review/` | 24 (chỉ batch, **không** gồm gold) | Part 4 |
-| `seg-review` | `work/tasks/seg/` | 8 | Part 5 |
+| `pilot` · `seg-review` · `selfcheck-blind` | `work/tasks/...` | 8 · 8 · 8 | chỉ [bài nâng cao](ADVANCED.md) |
 
 **Create new task** → chọn Project → kéo cả thư mục ảnh vào → **Submit**. Đếm: số ảnh trong Task = số ghi ở bảng trên.
 
@@ -59,7 +58,7 @@ Sinh `work/tasks/{gold,pilot,review,seg}/`. Mỗi thư mục là **một Task** 
 2. **Import format: COCO 1.0** → chọn file `.json` (ví dụ `submission/prelabel/pre_traps.coco.json`) → **OK**. CVAT nhận được cả `.json` lẫn `.zip`.
 3. Mở Task: đếm số box có trong ảnh đầu tiên và so với `viz/` bạn xem trước. Lệch nhiều = nhãn đang sai (xem mục 8).
 
-### 3b. Mask (segmentation): XML thay vì COCO
+### 3b. (Nâng cao) Mask nhiều ảnh: XML thay vì COCO
 
 Nạp COCO có `segmentation` vào CVAT (theo mã nguồn CVAT 2.81) tạo **cả polygon lẫn rectangle** cho mỗi vật. Để chỉ có polygon:
 
@@ -104,9 +103,8 @@ Với box máy bạn sửa trong CVAT, `source` có thể đổi, nên **không 
 | Task | Tên file nộp |
 |---|---|
 | gold-manual | `gold_manual.json` |
-| pilot | `pilot_reviewed.json` |
 | batch-review | `batch_reviewed.json` |
-| seg-review | `seg_reviewed.json` (chọn **COCO 1.0**; có polygon trong `segmentation`) |
+| (nâng cao) pilot / seg-review | `pilot_reviewed.json` / `seg_reviewed.json` |
 
 `python scripts/validate_labels.py --all` rồi mới tiếp tục.
 
@@ -124,7 +122,7 @@ Trong job: thanh công cụ trái → **AI Tools** → tab **Interactors** → c
 Menu **Models** (thanh trên cùng) phải có tên model; không thấy nghĩa là máy chủ chưa cài.
 
 Hạn chế đã gặp: **mỗi nhà cung cấp một khác**. Gói miễn phí của cvat.ai có thể giới hạn AI tools; CVAT Docker mặc định **chưa** cài model (mục 7).
-Không dùng được B1? Thay bằng `scripts/sam2_points.py` (Part 2 mục B1) cho phần "hiểu", và box → mask bằng SAM trong `prelabel.py --segmenter sam --sam <phiên bản>` cho phần "làm".
+Không dùng được B1? Thay bằng `scripts/sam2_points.py` (Part 5) cho phần "hiểu", và box → mask bằng SAM trong `prelabel.py --segmenter sam --sam <phiên bản>` cho phần "làm".
 
 ### B2. Automatic annotation (model có sẵn trong CVAT)
 

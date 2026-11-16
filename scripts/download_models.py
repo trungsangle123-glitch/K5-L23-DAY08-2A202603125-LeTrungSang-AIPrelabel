@@ -1,11 +1,11 @@
 """Tải trọng số model vào models/ (một lần).   python scripts/download_models.py --set core
 
 Bộ:
-  core   yolo26m, yolo26m-seg, yoloe-26s-seg, sam2.1_b            (~0.5 GB)  Part 2-5, bắt buộc
-  small  yolo26n, yolo26n-seg, yoloe-26s-seg, sam2.1_t            (~0.2 GB)  máy yếu / chỉ CPU
-  hf     Grounding DINO tiny + OWLv2 base (HuggingFace)          (~2.0 GB)  Part 2 mục D, nên làm
+  core   yolo26m, yoloe-26s-seg, sam2.1_b                       (~0.35 GB) bài chính, bắt buộc (làm TRƯỚC buổi học)
+  small  yolo26n, yoloe-26s-seg, sam2.1_t                       (~0.15 GB) máy yếu / chỉ CPU
+  hf     Grounding DINO tiny + OWLv2 base (HuggingFace)          (~2.0 GB)  NÂNG CAO (docs/ADVANCED.md)
   sam1 / sam1-base / sam2   chỉ tải SAM 1 (mobile_sam, sam_b) hoặc SAM 2.1 (t, s, b)
-  sam3   facebook/sam3 (gated)                                    (~3.5 GB)  tuỳ chọn, cần xin quyền
+  sam3   facebook/sam3 (gated)                                    (~3.5 GB)  NÂNG CAO, cần xin quyền
   all    core + hf
 YOLOE cần CLIP: lần chạy đầu ultralytics tự `pip install` CLIP từ git (cần git và mạng).
 """
@@ -17,8 +17,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SETS = {
-    "core": ["yolo26m.pt", "yolo26m-seg.pt", "yoloe-26s-seg.pt", "sam2.1_b.pt"],
-    "small": ["yolo26n.pt", "yolo26n-seg.pt", "yoloe-26s-seg.pt", "sam2.1_t.pt"],
+    "core": ["yolo26m.pt", "yoloe-26s-seg.pt", "sam2.1_b.pt"],
+    "small": ["yolo26n.pt", "yoloe-26s-seg.pt", "sam2.1_t.pt"],
     "sam1": ["mobile_sam.pt"],            # SAM 1 bản nhẹ (~40 MB)
     "sam1-base": ["sam_b.pt"],            # SAM 1 ViT-B (~375 MB)
     "sam2": ["sam2.1_t.pt", "sam2.1_s.pt", "sam2.1_b.pt"],

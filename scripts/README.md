@@ -10,16 +10,16 @@ Chạy **từ thư mục gốc repo** (`python scripts/<tên>.py`), venv đã k�
 | 0 | `check_env.py` | kiểm môi trường | in PASS / WARN / FAIL |
 | 0 | `download_models.py --set core` | tải trọng số | `models/` |
 | 0, 1 | `make_cvat_labels.py` | nhãn dán vào CVAT | `cvat/labels_generated.json` |
-| 1 | `prepare_workdirs.py` | copy ảnh thành các thư mục Task | `work/tasks/*` |
+| 1 | `prepare_workdirs.py` | copy ảnh thành các thư mục Task (`--advanced`: thêm pilot/seg/selfcheck) | `work/tasks/*` |
 | 2 | `prelabel.py` | chạy một model → COCO + ảnh xem nhanh | `<out>/pre.coco.json`, `viz/`, `work/runs.csv` |
-| 2 | `sam2_points.py` | SAM 2.1 với click | `<out>/mask_overlay.jpg` |
+| 5 | `sam2_points.py` | SAM (bản bất kỳ) với click | `<out>/<name>.jpg` (→ `submission/masks/`) |
 | 2, 3 | `merge_prelabels.py` | gộp nhiều model, áp ngưỡng, loại trùng | `pre.coco.json` |
 | 3 | `threshold_sweep.py` | ngưỡng theo lớp | `qc/threshold_sweep.*` |
 | 4 | `inject_traps.py` | cài ảnh bẫy | `prelabel/pre_traps.coco.json`, `traps_key.json` |
-| 4, 5 | `review_stats.py` | accepted/edited/deleted/added, so với gold, bắt bẫy | `qc/review_stats.*` |
-| 5 | `coco_to_cvat_xml.py` | COCO → CVAT XML (polygon sạch) | `.xml` |
+| 4 | `review_stats.py` | accepted/edited/deleted/added, so với gold, bắt bẫy | `qc/review_stats.*` |
+| nâng cao | `coco_to_cvat_xml.py` | COCO → CVAT XML (polygon sạch) | `.xml` |
 | 3–6 | `validate_labels.py` | kiểm file COCO export từ CVAT | in màn hình |
-| 6 | `self_consistency.py` | so hai bộ nhãn (gán lại mù / bạn học) | `qc/self_check.*` |
+| nâng cao | `self_consistency.py` | so hai bộ nhãn (gán lại mù / bạn học) | `qc/self_check.*` |
 | 6 | `build_release.py` | nhãn cuối 24 ảnh batch | `release/` |
 | 6 | `qc_sample.py`, `qc_report.py` | mẫu QC, số đo, gợi ý quyết định | `qc/qc_sample.csv`, `qc_review.csv`, `qc_report_auto.md` |
 | 6 | `check_submission.py` | tự kiểm bài nộp | in LỖI / CẢNH BÁO |
@@ -30,9 +30,9 @@ Chạy **từ thư mục gốc repo** (`python scripts/<tên>.py`), venv đã k�
 
 | Cờ | Ý nghĩa |
 |---|---|
-| `--model` | `yolo26` · `yoloe` · `gdino` · `owlv2` · `sam3` |
+| `--model` | `yolo26` · `yoloe` (bài chính) · `gdino` · `owlv2` · `sam3` (nâng cao) |
 | `--size` | cỡ YOLO: `n s m l x` (YOLOE: `s m l`); mặc định `m` / `s` |
-| `--split` / `--images` | `pilot`, `gold`, `batch`, `seg`, `all` (hoặc danh sách tên ảnh) |
+| `--split` / `--images` | `pilot` (8 ảnh thử model), `gold`, `batch`, `seg`, `all` (hoặc danh sách tên ảnh) |
 | `--conf`, `--thr person=0.4,car=0.5` | ngưỡng mặc định, ngưỡng riêng từng lớp |
 | `--classes` | chỉ **giữ** các lớp này (ví dụ `three_wheeler`) |
 | `--prompts 'tuk-tuk=three_wheeler,...'` | open-vocab: cụm chữ → lớp (mặc định lấy từ `taxonomy.json`) |

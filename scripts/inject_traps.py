@@ -7,7 +7,7 @@ Ghi:
   submission/prelabel/traps_key.json        <- đáp án: KHÔNG MỞ file này trước khi duyệt xong (honor system)
 
 Bốn loại lỗi cài: missing (xoá một box đúng), extra (thêm box ma), wrong_class (đổi lớp), loose (làm box lệch/lỏng).
-Bẫy chỉ cài trên ảnh thuộc tập `batch`, không cài lên ảnh gold/pilot. Cùng --student + --seed cho cùng bộ bẫy.
+Bẫy chỉ cài trên ảnh thuộc tập `batch` (12 bẫy trên 12 trong 24 ảnh), không cài lên ảnh gold. Cùng --student + --seed cho cùng bộ bẫy.
 """
 from __future__ import annotations
 

@@ -6,7 +6,7 @@
 
 <p align="center">
   <img alt="cá nhân" src="https://img.shields.io/badge/lab-cá%20nhân-0b1f3a">
-  <img alt="thời lượng" src="https://img.shields.io/badge/thời%20lượng-7–10%20giờ-ff8a3d">
+  <img alt="thời lượng" src="https://img.shields.io/badge/thời%20lượng-4%20giờ-ff8a3d">
   <img alt="ảnh" src="https://img.shields.io/badge/dữ%20liệu-36%20ảnh-12b3a8">
   <img alt="python" src="https://img.shields.io/badge/python-3.10–3.12-3776ab">
   <img alt="gpu" src="https://img.shields.io/badge/GPU-không%20bắt%20buộc-2fbf71">
@@ -17,13 +17,13 @@
 
 ## Bạn sẽ làm gì
 
-Cài và chạy các công cụ pre-label **từ đơn giản đến phức tạp**, đưa kết quả vào **CVAT**, **review có quy trình** (có ảnh bẫy để đo chính bạn), rồi **calibration** lại nhãn và guideline.
+Trong **4 giờ trên lớp** (cài đặt làm trước ~45 phút): chạy ba công cụ pre-label **từ đơn giản đến phức tạp** (YOLO26 → SAM → YOLOE), đưa kết quả vào **CVAT**, **review có quy trình** (có ảnh bẫy để đo chính bạn), rồi **calibration** lại nhãn và guideline.
 
 | Việc | Công cụ |
 |---|---|
 | Detector danh mục cố định | **YOLO26** |
 | Click ra mask (**SAM bắt buộc**, chọn SAM 1 · 2.1 · 3) | **SAM** |
-| Gõ chữ ra box + mask (open-vocabulary) | **YOLOE**, Grounding DINO, OWLv2, SAM 3 |
+| Gõ chữ ra box + mask (open-vocabulary) | **YOLOE** (nâng cao: Grounding DINO, OWLv2, SAM 3) |
 | Đưa nhãn vào CVAT & review | CVAT: import · AI Tools · `cvat-cli` |
 | Đo & calibration | `review_stats` · `threshold_sweep` · `self_consistency` · QC |
 
@@ -35,10 +35,10 @@ Cài và chạy các công cụ pre-label **từ đơn giản đến phức tạ
 
 ```mermaid
 flowchart LR
-  A[Part 1<br/>Gold gán tay<br/>không AI] --> B[Part 2<br/>Tour model]
-  B --> C[Part 3<br/>Pilot: ngưỡng<br/>theo lớp]
-  C --> D[Part 4<br/>Pre-label batch<br/>+ ảnh bẫy + review]
-  D --> E[Part 5<br/>Mask SAM<br/>+ CVAT trực tiếp]
+  A[Part 1<br/>Gold gán tay<br/>không AI] --> B[Part 2<br/>Tour 3 model]
+  B --> C[Part 3<br/>Ngưỡng theo lớp]
+  C --> D[Part 4<br/>Pre-label 24 ảnh<br/>+ 12 bẫy + review]
+  D --> E[Part 5<br/>Mask SAM<br/>3 vật]
   E --> F[Part 6<br/>Calibration + QC<br/>+ báo cáo]
   style A fill:#2fbf71,color:#fff
   style B fill:#7b61ff,color:#fff
@@ -52,7 +52,7 @@ flowchart LR
 
 ![Mẫu ảnh trong bộ dữ liệu](docs/assets/sample_grid.jpg)
 
-36 ảnh (Việt Nam, Thái Lan; CC BY / CC BY-SA / CC0): **gold 6** (gán tay) · **pilot 6** (chọn ngưỡng) · **batch 24** (lô thật, 8 ảnh làm segmentation). Khoảng 28% ảnh có **tuk-tuk, xích lô, ba gác** (lớp `three_wheeler`): model COCO gọi chúng là `car` / `truck`.
+36 ảnh (Việt Nam, Thái Lan; CC BY / CC BY-SA / CC0): **gold 4** (gán tay) · **batch 24** (lô thật) · **8 ảnh còn lại** để thử model và cho bài nâng cao. Khoảng 28% ảnh có **tuk-tuk, xích lô, ba gác** (lớp `three_wheeler`): model COCO gọi chúng là `car` / `truck`.
 
 ![Bốn cách pre-label trên cùng một ảnh](docs/assets/model_tour.jpg)
 
@@ -61,9 +61,9 @@ flowchart LR
 ## Bắt đầu nhanh (5 bước)
 
 1. **Fork** repo thành repo **public** của bạn (tên: xem [SUBMISSION.md](SUBMISSION.md)), `git clone`.
-2. Cài môi trường: [docs/SETUP.md](docs/SETUP.md) → `python scripts/check_env.py` ra **SẴN SÀNG**. *Máy yếu? Dùng* **[Google Colab](docs/COLAB.md)**.
+2. **Trước buổi học** (~45 phút): cài môi trường [docs/SETUP.md](docs/SETUP.md) → `python scripts/check_env.py` ra **SẴN SÀNG**. *Máy yếu? Dùng* **[Google Colab](docs/COLAB.md)**.
 3. Tạo Project CVAT từ `cvat/labels_generated.json`: [docs/CVAT_AI.md](docs/CVAT_AI.md) (có hình minh hoạ từng bước).
-4. Làm theo **[GUIDE.md](GUIDE.md)** từ **Part 1** (gán tay gold, *chưa* chạy model nào lên ảnh gold!).
+4. Trên lớp làm theo **[GUIDE.md](GUIDE.md)** từ **Part 1** (gán tay 4 ảnh gold, *chưa* chạy model nào lên ảnh gold!).
 5. Chạy `python scripts/check_submission.py` trước khi nộp.
 
 > **Khi nộp:** đổi dòng tiêu đề này thành `# Day 08 Lab — <MSHV> - <Họ và tên>`. Xem [SUBMISSION.md](SUBMISSION.md).
@@ -87,7 +87,7 @@ flowchart LR
 <summary><b>Vì sao có "ảnh bẫy" và "gold gán tay"?</b></summary>
 
 Nhãn máy càng trông hợp lý, mắt bạn càng ít nhìn lại ảnh (**thiên kiến tự động hóa**). Bạn sẽ tự đo mình:
-- **Gold** (6 ảnh bạn gán tay từ đầu) cho biết máy đúng / sót bao nhiêu **thật sự**.
+- **Gold** (4 ảnh bạn gán tay từ đầu) cho biết máy đúng / sót bao nhiêu **thật sự**.
 - **12 ảnh bẫy** (lỗi đã biết, trộn kín trong pre-label) cho biết bạn **bắt được bao nhiêu** lỗi của máy.
 - *Accepted cao* mà *bắt bẫy thấp* nghĩa là bạn đang bấm Accept chứ chưa kiểm.
 </details>
@@ -109,7 +109,7 @@ Nhãn máy càng trông hợp lý, mắt bạn càng ít nhìn lại ảnh (**th
 | **SAM 2.1** (`sam2.1_b.pt`) — khuyến nghị | `--sam sam2.1_b.pt` | cân bằng chất lượng / tốc độ |
 | SAM 3 (gated, gõ chữ ra mask) | `--model sam3` | có GPU + quyền truy cập |
 
-Chi tiết và cách ghi vào `recipe.md`: [docs/MODELS.md](docs/MODELS.md) mục B0.
+Chi tiết và cách ghi vào `REPORT.md` mục 1: [docs/MODELS.md](docs/MODELS.md) mục B0.
 </details>
 
 ## Tài liệu
@@ -123,7 +123,8 @@ Chi tiết và cách ghi vào `recipe.md`: [docs/MODELS.md](docs/MODELS.md) mụ
 | Sản phẩm phải nộp, tên repo | [SUBMISSION.md](SUBMISSION.md) |
 | Cài đặt môi trường, tải model | [docs/SETUP.md](docs/SETUP.md) |
 | Chạy trên Google Colab | [docs/COLAB.md](docs/COLAB.md) |
-| Tour model (YOLO26, SAM, YOLOE, Grounding DINO, OWLv2, SAM 3) | [docs/MODELS.md](docs/MODELS.md) |
+| Tour 3 model: YOLO26, SAM, YOLOE | [docs/MODELS.md](docs/MODELS.md) |
+| Bài nâng cao (tuỳ chọn): Grounding DINO, OWLv2, SAM 3, `cvat-cli`, pilot, mask 8 ảnh | [docs/ADVANCED.md](docs/ADVANCED.md) |
 | CVAT: import, AI Tools, `cvat-cli` (có hình) | [docs/CVAT_AI.md](docs/CVAT_AI.md) |
 | Quy trình review, ảnh bẫy | [docs/REVIEW_CHECKLIST.md](docs/REVIEW_CHECKLIST.md) |
 | Chọn ngưỡng theo lớp (Part 3) | [docs/THRESHOLD.md](docs/THRESHOLD.md) |

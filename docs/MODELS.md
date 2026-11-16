@@ -1,30 +1,26 @@
-# Tour các model pre-label (Part 2)
+# Tour model (Part 2): YOLO26 · SAM · YOLOE
 
-Đi **từ đơn giản đến phức tạp**. Mỗi mục: model là gì → lệnh chạy → **nhìn gì** → câu hỏi để ghi vào `submission/model_log.csv`.
-Mọi lệnh chạy ở thư mục gốc repo, venv đã kích hoạt ([SETUP.md](SETUP.md)). Ảnh kết quả ở `work/prelabel/<tên>/viz/`.
+Đi **từ đơn giản đến phức tạp** bằng **ba model bắt buộc**. Mỗi mục: model là gì → lệnh chạy → **nhìn gì** → ghi vào `submission/model_log.csv`.
+Chạy ở thư mục gốc repo, venv đã kích hoạt ([SETUP.md](SETUP.md)). Ảnh kết quả ở `work/prelabel/<tên>/viz/`. Model nặng hơn (Grounding DINO, OWLv2, SAM 3): [ADVANCED.md](ADVANCED.md).
 
 ![Bốn cách pre-label trên cùng một ảnh](assets/model_tour.jpg)
 
-*Cùng ảnh `img_017`: (1) YOLO26 gọi tuk-tuk là `car`/`truck`, (2) YOLOE gõ chữ tìm được tuk-tuk nhưng box lỏng, (3) Grounding DINO tương tự, (4) SAM 2.1 biến box thành mask (nhưng mask chỉ đúng khi box đúng).*
-
-## Bản đồ nhanh
+*Cùng ảnh `img_017`: (1) YOLO26 gọi tuk-tuk là `car`/`truck`, (2) YOLOE gõ chữ tìm được tuk-tuk nhưng box lỏng, (3) Grounding DINO (nâng cao), (4) SAM biến box thành mask (mask chỉ đúng khi box đúng).*
 
 ![Bốn họ model](assets/model_families.png)
 
-| # | Model | Đầu vào | Đầu ra | Dùng khi | Điểm yếu cần kiểm |
-|---|---|---|---|---|---|
-| A | **YOLO26** | ảnh | box + 1 trong 80 lớp COCO | lớp đã có trong COCO, số lượng lớn | không biết lớp mới (tuk-tuk → car/truck), vật nhỏ ở xa |
-| B | **SAM** (bắt buộc; chọn 1 phiên bản: SAM 1 · SAM 2.1 · SAM 3) | ảnh + click / box (SAM 3: chữ) | mask | cần đường bao sát | mask chỉ tốt khi prompt tốt; một click mơ hồ (vật hay bộ phận?) |
-| C | **YOLOE-26** (open-vocab, real-time) | ảnh + chữ | box + mask | lớp mới, cần nhanh | gọi nhầm lớp, box lỏng, chữ khác nhau cho kết quả khác nhau |
-| D | **Grounding DINO**, **OWLv2** (open-vocab, nặng hơn) | ảnh + chữ | box | cần thử model khác để so sánh | chậm hơn; ngưỡng text/box khác nhau; nhận nhầm khái niệm |
-| E | **SAM 3** (concept prompting) | ảnh + chữ | **mọi instance + mask** | muốn mask hàng loạt từ chữ | gated; yếu với khái niệm hiếm / bị che |
-| F | Ghép lại thành **recipe** | | | cuối Part 2 | |
+## Ba model bắt buộc
 
-Quy tắc ghi `model_log.csv` (mỗi lần chạy một dòng): `run_id, part, model, params, split, n_boxes, sec_per_img, what_went_right, what_went_wrong, decision`.
-Mỗi lần chạy `prelabel.py` tự ghi một dòng vào `work/runs.csv` (không commit) **có đúng các cột đó** (`run_id`, `params`, `part` để trống): copy dòng sang `model_log.csv`, điền `part` và 3 cột nhận xét **bằng mắt nhìn ảnh**. (`sam2_points.py` và các lần thử tay không tự ghi: tự thêm dòng.) Số liệu không có nhận xét không được điểm.
+| # | Model | Đầu vào | Đầu ra | Điểm yếu cần kiểm |
+|---|---|---|---|---|
+| A | **YOLO26** | ảnh | box + 1 trong 80 lớp COCO | không biết lớp mới (tuk-tuk → car/truck), vật nhỏ ở xa |
+| B | **SAM** (chọn SAM 1 hoặc 2.1; SAM 3 ở nâng cao) | ảnh + click / box | mask | một click mơ hồ (vật hay bộ phận?); box sai thì mask sai |
+| C | **YOLOE-26** | ảnh + chữ | box (+ mask) | gọi nhầm lớp, box lỏng, chữ khác cho kết quả khác |
 
-> **Luôn đọc dòng cuối của lệnh**: `Tên thô KHÔNG có trong ánh xạ ...` cho biết những lớp COCO (bottle, umbrella...) bị bỏ vì không có trong taxonomy.
-> Đó chính là hộp thoại *Labels matching* của CVAT: ánh xạ thiếu = mất box im lặng.
+`model_log.csv`: mỗi lần chạy một dòng `run_id, part, model, params, split, n_boxes, sec_per_img, what_went_right, what_went_wrong, decision`.
+`prelabel.py` tự ghi dòng có sẵn các cột đó vào `work/runs.csv` (`part`, nhận xét để trống): copy sang `model_log.csv` rồi điền bằng **mắt nhìn ảnh**. Nhận xét phải **cụ thể** (ảnh nào, vật nào), không viết "kém".
+
+> **Luôn đọc dòng cuối của lệnh**: `Tên thô KHÔNG có trong ánh xạ ...` là các lớp COCO (bottle, umbrella...) bị bỏ vì không có trong taxonomy: đó chính là hộp thoại *Labels matching* của CVAT, ánh xạ thiếu = mất box im lặng.
 
 ---
 
@@ -34,29 +30,18 @@ Mỗi lần chạy `prelabel.py` tự ghi một dòng vào `work/runs.csv` (khô
 Cỡ model: `n` (nhỏ, nhanh) … `x` (lớn, chậm). Lab dùng `m`.
 
 ```bash
-# 1) ngưỡng thấp (0.05): xem máy "nghĩ" ra những gì; nhiều box thừa
-python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.05 --out work/prelabel/y26_pilot_c005
-# 2) ngưỡng thường dùng (0.25)
-python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.25 --out work/prelabel/y26_pilot_c025
-# 3) ngưỡng cao (0.5): sạch hơn nhưng sót
-python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.5  --out work/prelabel/y26_pilot_c050
+# ngưỡng thường dùng (0.25) và ngưỡng cao (0.5): sạch hơn nhưng sót
+python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.25 --out work/prelabel/t_y26
+python scripts/prelabel.py --model yolo26 --size m --split pilot --conf 0.5  --out work/prelabel/t_y26_c05
 ```
 
-**Nhìn gì.** So `viz/` của ba lần chạy trên `img_011` và `img_016`:
+**Nhìn gì.** So `viz/` của hai lần chạy trên `img_011` và `img_016`:
 - Số box đổi thế nào theo ngưỡng (xem dòng "Số box theo lớp")? Ngưỡng nào bạn bắt đầu thấy xe bị bỏ sót? Ngưỡng nào còn nhiều box thừa?
 - **Tuk-tuk / ba gác** được gọi là gì? (gợi ý: thường `car` hoặc `truck`). Đây là lý do cần model open-vocab (mục C).
 - Người ngồi trên xe máy: có box `person` riêng không? Có box `motorbike` riêng không?
 - Có lớp nào bị bỏ vì không ánh xạ không (`banana`, `umbrella`...)? Bỏ như vậy có đúng với taxonomy không?
 
-**Ghi `model_log`:** ba dòng (ba ngưỡng), `what_went_wrong` ghi lỗi **cụ thể** (ảnh, vật), không ghi "kém".
-
-### A2. YOLO26-seg — mask từ chính detector
-
-```bash
-python scripts/prelabel.py --model yolo26 --size m --segmenter native --images img_004.jpg img_013.jpg --out work/prelabel/y26seg_demo
-```
-
-Mở `viz/`: mask của YOLO26-seg thường **thô** (đa giác thấp độ phân giải). So với SAM 2.1 ở mục B2.
+**Ghi `model_log`:** hai dòng (hai ngưỡng), `what_went_wrong` ghi lỗi **cụ thể** (ảnh, vật), không ghi "kém".
 
 ---
 
@@ -71,9 +56,9 @@ Trong CVAT đây là công cụ **Interactor** (click trái = thêm, click phả
 |---|---|---|---|---|---|
 | **SAM 1** (2023) | `mobile_sam.pt` (bản nhẹ) · `sam_b.pt` · `sam_l.pt` | 40 MB · 375 MB · 1.2 GB | click, box | `--sam mobile_sam.pt` | máy yếu, chỉ cần mask cho ảnh tĩnh |
 | **SAM 2.1** (2024) | `sam2.1_t/s/b/l.pt` | 40–900 MB | click, box (+ video) | `--sam sam2.1_b.pt` (**mặc định**) | cân bằng chất lượng / tốc độ; khuyến nghị |
-| **SAM 3** (2025, gated) | `facebook/sam3` | ~3.5 GB | **chữ** (mọi instance) | `--model sam3` (mục E) | có GPU, có quyền truy cập, muốn mask hàng loạt từ chữ |
+| **SAM 3** (2025, gated) | `facebook/sam3` | ~3.5 GB | **chữ** (mọi instance) | `--model sam3` ([ADVANCED.md](ADVANCED.md)) | có GPU, có quyền truy cập, muốn mask hàng loạt từ chữ |
 
-- **Bạn chọn một phiên bản chính** cho Part 5 và ghi **vì sao** vào `recipe.md` (chất lượng mask, tốc độ, RAM, giấy phép, có cần quyền không).
+- **Bạn chọn một phiên bản chính** cho Part 5 và ghi **vì sao** vào `REPORT.md` mục 1 (chất lượng mask, tốc độ, RAM, giấy phép, có cần quyền không).
 - `model_log.csv` phải có **ít nhất một dòng chạy SAM** ghi rõ phiên bản (tự kiểm tra bằng `check_submission.py`). Khuyến khích so **hai phiên bản** (ví dụ `mobile_sam.pt` và `sam2.1_b.pt`) trên cùng 3 vật và ghi biên mask khác nhau thế nào.
 - Chưa có quyền SAM 3? Chọn SAM 1 hoặc 2.1: vẫn **đủ yêu cầu**. Dùng SAM 3 được tính là đã dùng SAM.
 - Tải: `python scripts/download_models.py --set sam1` (mobile_sam) · `--set sam1-base` · `--set sam2` · `--set sam3`.
@@ -111,6 +96,8 @@ Lỗi lan truyền: nếu box thừa (không có vật) thì mask là gì? (gợ
 
 ---
 
+---
+
 ## C. YOLOE-26 — open-vocabulary, gõ chữ ra box + mask
 
 **Là gì.** Biến thể YOLO nhận **danh sách chữ** thay vì 80 lớp cố định ("zero-shot": chưa huấn luyện riêng cho lớp đó), vẫn chạy rất nhanh.
@@ -137,58 +124,20 @@ python scripts/prelabel.py --model yoloe --prompts "tuk-tuk=three_wheeler,motorb
 
 ---
 
-## D. Grounding DINO và OWLv2 — open-vocab "nặng" (so sánh)
-
-**Là gì.** Hai model gõ-chữ-ra-box khác họ với YOLOE: Grounding DINO (text-grounded, Transformer, `IDEA-Research/grounding-dino-tiny`) và OWLv2 (`google/owlv2-base-patch16-ensemble`). Chậm hơn YOLOE ~3–10×.
-
-```bash
-python scripts/prelabel.py --model gdino --classes three_wheeler --split pilot --conf 0.3 --out work/prelabel/gdino_pilot
-python scripts/prelabel.py --model owlv2 --classes three_wheeler --split pilot --conf 0.2 --out work/prelabel/owlv2_pilot
-```
-
-> Grounding DINO có thêm `--text-thr` (ngưỡng text, mặc định 0.25). OWLv2 trên Mac tự chạy CPU, chậm hơn nhưng ổn.
-> Ngưỡng điểm của ba model **không so trực tiếp được** với nhau: 0.3 ở model này ≠ 0.3 ở model kia.
-
-**Nhìn gì.** Lập bảng nhỏ cho `img_002`, `img_011`, `img_016`... (ảnh pilot có xe ba bánh): số tuk-tuk đúng (bạn tự đếm), YOLOE tìm được bao nhiêu, gdino, owlv2; ai có box thừa; ai nhanh nhất (`sec_per_img`).
-**Không có model "thắng tuyệt đối"**: chọn model theo lớp và theo ngưỡng của chính **dữ liệu của bạn** (pilot).
-
 ---
 
-## E. SAM 3 — concept prompting: gõ chữ, ra mọi instance + mask (một lựa chọn trong ba phiên bản SAM)
+## Sau khi thử (cuối Part 2)
 
-**Là gì.** SAM 3 (Meta, 2025) nhận **cụm danh từ** và trả mask cho **mọi** vật khớp, không cần click. Yếu ở khái niệm hiếm, vật bị che (slide: cgF1 65.0 so với 74.2 của người).
-Model gated: xin quyền trước ([SETUP.md](SETUP.md) mục 4).
-
-```bash
-python scripts/download_models.py --set sam3
-python scripts/prelabel.py --model sam3 --classes three_wheeler --images img_004.jpg img_013.jpg --conf 0.4 --out work/prelabel/sam3_demo
-```
-
-> Đường chạy SAM 3 trong repo này chưa được kiểm chứng trên máy giảng viên (cần quyền truy cập). Nếu API của `transformers` khác bản ghi trong script,
-> báo lỗi đầy đủ cho giảng viên thay vì tự sửa; ghi `decision = skipped` vào `model_log.csv`.
-
-**Nhìn gì (nếu chạy được).** Mask có tách riêng từng tuk-tuk khi xếp sát nhau (img_004)? Có gom cả người lái vào xe không? So với B2 (box → SAM 2.1): bớt được bước nào? Còn lỗi nào?
-
----
-
-## F. Ghép thành recipe (cuối Part 2)
-
-Không model đơn lẻ nào đủ: **YOLO26** giỏi 6 lớp COCO nhưng mù tuk-tuk; **YOLOE** biết tuk-tuk nhưng kém 6 lớp kia; **SAM 2.1** cho mask từ box.
-Recipe đề xuất (bạn **được** đổi nếu thí nghiệm của bạn cho kết quả khác; ghi lý do):
+Chạy mọi ảnh một lần ở ngưỡng thấp (nguồn cho Part 3, 4):
 
 ```bash
-# 1) chạy model ở ngưỡng THẤP một lần trên MỌI ảnh (GPU/MPS ~15 giây; CPU vài phút)
 python scripts/prelabel.py --model yolo26 --size m --split all --conf 0.05 --out work/prelabel/y26_all --no-viz
 python scripts/prelabel.py --model yoloe --classes three_wheeler --split all --conf 0.05 --out work/prelabel/yoloe_all --no-viz
-# 2) gộp, áp ngưỡng và loại trùng (three_wheeler của YOLOE thắng car/truck của YOLO26 khi chồng nhau, IoU >= 0.6)
-python scripts/merge_prelabels.py work/prelabel/yoloe_all/pre.coco.json work/prelabel/y26_all/pre.coco.json \
-    --conf 0.1 --iou 0.6 --split pilot --out work/prelabel/merged_pilot/pre.coco.json
 ```
 
-Ngưỡng `--conf 0.1` ở đây là **tạm, để dựng GT pilot**: Part 3 sẽ chọn ngưỡng theo lớp bằng dữ liệu (`threshold_sweep.py`). Ghi recipe cuối vào `submission/recipe.md` (mẫu có sẵn).
+**Vì sao ghép hai model:** YOLO26 giỏi 6 lớp COCO nhưng mù tuk-tuk; YOLOE biết tuk-tuk nhưng kém 6 lớp kia. `merge_prelabels.py` (Part 3, 4) cho `three_wheeler` của YOLOE thắng `car`/`truck` của YOLO26 khi chúng chồng nhau (IoU ≥ 0.6).
 
-### Câu hỏi tổng kết Part 2 (ghi vào REPORT.md, phần 1)
-
-1. Với từng lớp của taxonomy, model nào bạn chọn và vì sao (dẫn dòng `model_log`)?
-2. Lỗi nào của máy **không thể sửa bằng đổi ngưỡng** (gợi ý: sai lớp tuk-tuk)? Sửa bằng cách nào (đổi model / ánh xạ / sửa tay)?
-3. Slide nói *"điểm tin cậy không bảo đảm nhãn đúng"*: bạn đã thấy ví dụ nào trong ảnh pilot (box điểm cao mà sai, hoặc điểm thấp mà đúng)?
+**Ba câu hỏi để ghi vào `REPORT.md` mục 1:**
+1. Với từng lớp, model nào bạn dùng và vì sao (dẫn dòng `model_log`)?
+2. Lỗi nào của máy **không thể sửa bằng đổi ngưỡng** (gợi ý: tuk-tuk bị gọi `car`)? Sửa bằng cách nào?
+3. Slide nói *"điểm tin cậy không bảo đảm nhãn đúng"*: bạn đã thấy box điểm cao mà sai (hoặc điểm thấp mà đúng) ở ảnh nào?

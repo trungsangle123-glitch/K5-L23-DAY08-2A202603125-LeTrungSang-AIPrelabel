@@ -5,7 +5,7 @@
 --guideline-gap N : số ca bạn thấy guideline CHƯA có quy tắc (chưa chốt)  -> N > 0 gợi ý HOLD
 --data-problem  N : số ảnh hỏng/mờ không dùng được                       -> N > 0 gợi ý HOLD
 Đọc: qc_sample.csv, qc_review.csv, và (nếu có) review_stats.json, self_check.json. Ghi submission/qc/qc_report_auto.md.
-QC_REPORT.md cuối cùng do BẠN viết (script không ghi file đó).
+Phần QC trong REPORT.md (mục 7) do BẠN viết (script không ghi file đó).
 """
 from __future__ import annotations
 
@@ -125,7 +125,7 @@ def main() -> None:
     text = "\n".join(L) + "\n"
     (qc / "qc_report_auto.md").write_text(text, encoding="utf8")
     print(text)
-    print(f"Đã ghi {rel(qc / 'qc_report_auto.md')}. Hãy tự viết QC_REPORT.md dựa trên số liệu này.")
+    print(f"Đã ghi {rel(qc / 'qc_report_auto.md')}. Hãy tự viết REPORT.md mục 7 dựa trên số liệu này.")
 
 
 if __name__ == "__main__":

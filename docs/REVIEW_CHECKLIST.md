@@ -60,9 +60,9 @@ Bẫy **không** thay thế QC mẫu (Part 6); nó đo **người duyệt**, cò
 
 ## 5. Ghi giờ (time_log.csv)
 
-Cột: `step, images, minutes, note`. Các `step` bắt buộc: `gold_manual` (gán tay 6 ảnh gold), `pilot_review` (duyệt 6 ảnh pilot),
-`batch_review` (duyệt 24 ảnh batch), `seg_review` (8 ảnh seg). Bấm đồng hồ thật, **không ước lượng sau**. Thêm dòng `break` nếu nghỉ dài (không tính vào phút làm).
-Dùng để trả lời trong REPORT: *một ảnh gán tay hết bao lâu, duyệt hết bao lâu; pre-label có tiết kiệm không, tiết kiệm bao nhiêu %?* Lưu ý: 6 ảnh gold bạn gán tay trước nên đã quen kiểu cảnh này: nói rõ thiên lệch đó khi so thời gian.
+Cột: `step, images, minutes, note`. Các `step` bắt buộc: `gold_manual` (gán tay 4 ảnh gold),
+`batch_review` (duyệt 24 ảnh batch). Bấm đồng hồ thật, **không ước lượng sau**. Thêm dòng `break` nếu nghỉ dài (không tính vào phút làm).
+Dùng để trả lời trong REPORT: *một ảnh gán tay hết bao lâu, duyệt hết bao lâu; pre-label có tiết kiệm không, tiết kiệm bao nhiêu %?* Lưu ý: 4 ảnh gold bạn gán tay trước nên đã quen kiểu cảnh này: nói rõ thiên lệch đó khi so thời gian.
 
 ## 6. Sau khi export: đo
 
@@ -74,7 +74,7 @@ python scripts/review_stats.py --pre submission/prelabel/pre_traps.coco.json --f
 
 Đọc `submission/qc/review_stats.md`: accepted / edited / deleted / added; precision-recall của **máy** so với gold; tỉ lệ bắt bẫy (đo **bạn**).
 
-> Vì sao 6 ảnh gold **không** nằm trong Task review: bạn vừa tự gán tay chúng, duyệt lại ngay sẽ đo trí nhớ chứ không đo thiên kiến. *(Tuỳ chọn nâng cao)*: sau ≥ 24 giờ, tạo Task `gold-review` từ `work/tasks/gold/` + pre-label gold, duyệt, export `submission/labels/gold_reviewed.json`, rồi chạy lại `review_stats.py --final submission/labels/gold_reviewed.json --splits gold --out submission/qc/review_stats_gold ...` để có thêm **residual / new error** (lỗi của máy bạn giữ lại / lỗi bạn tạo ra). Cách đọc từng số: [CALIBRATION_QC.md](CALIBRATION_QC.md).
+> Vì sao 4 ảnh gold **không** nằm trong Task review: bạn vừa tự gán tay chúng, duyệt lại ngay sẽ đo trí nhớ chứ không đo thiên kiến. *(Tuỳ chọn nâng cao)*: sau ≥ 24 giờ, tạo Task `gold-review` từ `work/tasks/gold/` + pre-label gold, duyệt, export `submission/labels/gold_reviewed.json`, rồi chạy lại `review_stats.py --final submission/labels/gold_reviewed.json --splits gold --out submission/qc/review_stats_gold ...` để có thêm **residual / new error** (lỗi của máy bạn giữ lại / lỗi bạn tạo ra). Cách đọc từng số: [CALIBRATION_QC.md](CALIBRATION_QC.md).
 
 ### Ba quy tắc giảm thiên kiến của riêng bạn (ghi vào REPORT.md)
 
