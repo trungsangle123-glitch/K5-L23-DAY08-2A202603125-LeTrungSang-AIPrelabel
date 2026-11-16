@@ -15,21 +15,21 @@
 
 > **Máy gán sẵn, người sửa.** Nhanh hơn vẽ tay — nhưng **bạn** vẫn là chốt chặn chất lượng, và bạn phải **đo** được điều đó.
 
-## 🎯 Bạn sẽ làm gì
+## Bạn sẽ làm gì
 
 Cài và chạy các công cụ pre-label **từ đơn giản đến phức tạp**, đưa kết quả vào **CVAT**, **review có quy trình** (có ảnh bẫy để đo chính bạn), rồi **calibration** lại nhãn và guideline.
 
-| | Việc | Công cụ |
-|---|---|---|
-| 🟢 | Detector danh mục cố định | **YOLO26** |
-| 🟣 | Click ra mask (**SAM bắt buộc**, chọn SAM 1 · 2.1 · 3) | **SAM** |
-| 🟠 | Gõ chữ ra box + mask (open-vocabulary) | **YOLOE**, Grounding DINO, OWLv2, SAM 3 |
-| 🔴 | Đưa nhãn vào CVAT & review | CVAT: import · AI Tools · `cvat-cli` |
-| 🔵 | Đo & calibration | `review_stats` · `threshold_sweep` · `self_consistency` · QC |
+| Việc | Công cụ |
+|---|---|
+| Detector danh mục cố định | **YOLO26** |
+| Click ra mask (**SAM bắt buộc**, chọn SAM 1 · 2.1 · 3) | **SAM** |
+| Gõ chữ ra box + mask (open-vocabulary) | **YOLOE**, Grounding DINO, OWLv2, SAM 3 |
+| Đưa nhãn vào CVAT & review | CVAT: import · AI Tools · `cvat-cli` |
+| Đo & calibration | `review_stats` · `threshold_sweep` · `self_consistency` · QC |
 
 ![Bốn họ model](docs/assets/model_families.png)
 
-## 🗺️ Lộ trình
+## Lộ trình
 
 ![Lộ trình 7 Part](docs/assets/roadmap.png)
 
@@ -48,7 +48,7 @@ flowchart LR
   style F fill:#0b1f3a,color:#fff
 ```
 
-## 🖼️ Bộ dữ liệu: phố châu Á, và những chiếc xe mà COCO không biết tên
+## Bộ dữ liệu: phố châu Á, và những chiếc xe mà COCO không biết tên
 
 ![Mẫu ảnh trong bộ dữ liệu](docs/assets/sample_grid.jpg)
 
@@ -58,7 +58,7 @@ flowchart LR
 
 *Cùng một ảnh: (1) YOLO26 gọi tuk-tuk là car/truck · (2) YOLOE gõ chữ tìm đúng nhưng box lỏng · (3) Grounding DINO · (4) box → SAM → mask.*
 
-## 🚀 Bắt đầu nhanh (5 bước)
+## Bắt đầu nhanh (5 bước)
 
 1. **Fork** repo thành repo **public** của bạn (tên: xem [SUBMISSION.md](SUBMISSION.md)), `git clone`.
 2. Cài môi trường: [docs/SETUP.md](docs/SETUP.md) → `python scripts/check_env.py` ra **SẴN SÀNG**. *Máy yếu? Dùng* **[Google Colab](docs/COLAB.md)**.
@@ -68,7 +68,7 @@ flowchart LR
 
 > **Khi nộp:** đổi dòng tiêu đề này thành `# Day 08 Lab — <MSHV> - <Họ và tên>`. Xem [SUBMISSION.md](SUBMISSION.md).
 
-## 🔍 CVAT: hai cách dùng AI
+## CVAT: hai cách dùng AI
 
 ![Hai cách đưa nhãn máy vào CVAT](docs/assets/two_paths.png)
 
@@ -79,7 +79,7 @@ flowchart LR
 </tr>
 </table>
 
-## ✅ Quy trình review: 4 bước + quét ảnh trước
+## Quy trình review: 4 bước + quét ảnh trước
 
 ![Checklist review](docs/assets/review_checklist.png)
 
@@ -112,27 +112,27 @@ Nhãn máy càng trông hợp lý, mắt bạn càng ít nhìn lại ảnh (**th
 Chi tiết và cách ghi vào `recipe.md`: [docs/MODELS.md](docs/MODELS.md) mục B0.
 </details>
 
-## 📚 Tài liệu
+## Tài liệu
 
 | Bạn cần | Xem |
 |---|---|
-| 🧭 Các Part và lệnh chạy | [GUIDE.md](GUIDE.md) |
-| ⏱️ Mốc tiến độ | [CHECKPOINTS.md](CHECKPOINTS.md) |
-| 📏 Quy tắc làm bài | [RULES.md](RULES.md) |
-| 💯 Chấm điểm (100 điểm) | [RUBRIC.md](RUBRIC.md) |
-| 📦 Sản phẩm phải nộp, tên repo | [SUBMISSION.md](SUBMISSION.md) |
-| 🛠️ Cài đặt môi trường, tải model | [docs/SETUP.md](docs/SETUP.md) |
-| ☁️ Chạy trên Google Colab | [docs/COLAB.md](docs/COLAB.md) |
-| 🤖 Tour model (YOLO26, SAM, YOLOE, Grounding DINO, OWLv2, SAM 3) | [docs/MODELS.md](docs/MODELS.md) |
-| 🖱️ CVAT: import, AI Tools, `cvat-cli` (có hình) | [docs/CVAT_AI.md](docs/CVAT_AI.md) |
-| ✅ Quy trình review, ảnh bẫy | [docs/REVIEW_CHECKLIST.md](docs/REVIEW_CHECKLIST.md) |
-| 🎚️ Calibration & QC, cách đọc số đo | [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md) |
-| 📝 Label contract (guideline v1.0) + khung v1.1 | [guideline/](guideline/) |
-| 🧰 Các script | [scripts/README.md](scripts/README.md) |
-| 🖼️ Nguồn & giấy phép ảnh | [data/README.md](data/README.md), [data/ATTRIBUTION.csv](data/ATTRIBUTION.csv) |
-| 🙋 Thông tin & kết quả tóm tắt của bạn | [STUDENT.md](STUDENT.md) |
+| Các Part và lệnh chạy | [GUIDE.md](GUIDE.md) |
+| ⏱ Mốc tiến độ | [CHECKPOINTS.md](CHECKPOINTS.md) |
+| Quy tắc làm bài | [RULES.md](RULES.md) |
+| Chấm điểm (100 điểm) | [RUBRIC.md](RUBRIC.md) |
+| Sản phẩm phải nộp, tên repo | [SUBMISSION.md](SUBMISSION.md) |
+| Cài đặt môi trường, tải model | [docs/SETUP.md](docs/SETUP.md) |
+| Chạy trên Google Colab | [docs/COLAB.md](docs/COLAB.md) |
+| Tour model (YOLO26, SAM, YOLOE, Grounding DINO, OWLv2, SAM 3) | [docs/MODELS.md](docs/MODELS.md) |
+| CVAT: import, AI Tools, `cvat-cli` (có hình) | [docs/CVAT_AI.md](docs/CVAT_AI.md) |
+| Quy trình review, ảnh bẫy | [docs/REVIEW_CHECKLIST.md](docs/REVIEW_CHECKLIST.md) |
+| Calibration & QC, cách đọc số đo | [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md) |
+| Label contract (guideline v1.0) + khung v1.1 | [guideline/](guideline/) |
+| Các script | [scripts/README.md](scripts/README.md) |
+| Nguồn & giấy phép ảnh | [data/README.md](data/README.md), [data/ATTRIBUTION.csv](data/ATTRIBUTION.csv) |
+| Thông tin & kết quả tóm tắt của bạn | [STUDENT.md](STUDENT.md) |
 
-## 🏁 Bạn học được gì
+## Bạn học được gì
 
 - Chọn đúng **họ model** cho việc: click (SAM) · gõ chữ (YOLOE, Grounding DINO, OWLv2, SAM 3) · danh mục cố định (YOLO26).
 - Đưa nhãn vào CVAT hai cách: **offline import** và **trực tiếp** (AI Tools, `cvat-cli`).
