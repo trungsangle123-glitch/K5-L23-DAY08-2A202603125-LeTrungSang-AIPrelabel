@@ -68,7 +68,7 @@ def main():
          "| Chỉ số | Giá trị | Mẫu số | Ngưỡng |", "|---|---|---|---|",
          f"| IoU trung bình | {'n/a' if mi is None else '%.3f' % mi} | {tot} cặp box ghép được | ≥ {r['self_iou_min']} |",
          f"| Cùng lớp | {'n/a' if ca is None else '%.1f%%' % (ca * 100)} | {tot} cặp box ghép được | ≥ {r['self_class_min'] * 100:.0f}% |",
-         f"| Tỉ lệ box không ghép được (A hoặc B bỏ sót/thừa) | {"n/a" if unm is None else "%.1f%%" % (unm * 100)} | {tot + ua_n + ub_n} box | ≤ {r["self_unmatched_max"] * 100:.0f}% |", f"| Chỉ có ở A (B bỏ sót / A thừa) | {ua_n} | | |", f"| Chỉ có ở B (A bỏ sót / B thừa) | {ub_n} | | |", "",
+         f"| Tỉ lệ box không ghép được (A hoặc B bỏ sót/thừa) | {'n/a' if unm is None else '%.1f%%' % (unm * 100)} | {tot + ua_n + ub_n} box | ≤ {r['self_unmatched_max'] * 100:.0f}% |", f"| Chỉ có ở A (B bỏ sót / A thừa) | {ua_n} | | |", f"| Chỉ có ở B (A bỏ sót / B thừa) | {ub_n} | | |", "",
          f"**{'ĐẠT' if ok else 'CHƯA ĐẠT'}**", "",
          "Mỗi dòng trong `self_check_cases.csv` là một ứng viên calibration: hỏi *guideline mơ hồ* hay *tôi bất cẩn*?"]
     text = "\n".join(L) + "\n"

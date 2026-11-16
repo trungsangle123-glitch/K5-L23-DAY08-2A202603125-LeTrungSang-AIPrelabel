@@ -295,7 +295,7 @@ def save_json(path: Path, obj) -> None:
 
 
 def read_csv(path: Path) -> List[dict]:
-    with path.open(encoding="utf8", newline="") as f:
+    with path.open(encoding="utf-8-sig", newline="") as f:  # utf-8-sig: chịu được file CSV lưu từ Excel có BOM
         return list(csv.DictReader(f))
 
 

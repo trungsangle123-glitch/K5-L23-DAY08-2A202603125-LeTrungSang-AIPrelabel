@@ -102,6 +102,8 @@ def main() -> None:
         exists(qc / f)
     if (qc / "review_stats.json").exists():
         d = json.loads((qc / "review_stats.json").read_text(encoding="utf8"))
+        if d.get("traps") and d["traps"].get("n", 0) < 10:
+            E(f"review_stats.json: chỉ có {d['traps'].get('n', 0)} bẫy được chấm (cần ≥ 10 trong 12)")
         if not d.get("traps"):
             E("review_stats.json không có phần bẫy: chạy review_stats.py với --key submission/prelabel/traps_key.json")
         if not d.get("gold"):

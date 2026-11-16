@@ -23,7 +23,7 @@
 ## 3. Thiên kiến tự động hóa và ảnh bẫy
 
 - Bắt bẫy: <<.../12>>; loại nào lọt: <<>>; vì sao (tôi đã bỏ bước nào của checklist)? <<>>
-- Recall của tôi so với recall của máy trên gold: <<giống / hơn / kém>> → nghĩa là <<>>
+- Accepted cao mà bắt bẫy thấp (hoặc ngược lại) nói gì về cách tôi duyệt? <<>>
 
 ## 4. Máy có đáng dùng không?
 

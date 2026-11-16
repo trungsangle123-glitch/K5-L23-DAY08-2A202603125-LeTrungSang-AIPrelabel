@@ -156,10 +156,12 @@ def main():
     trap_res = None
     if keyd is not None:
         caught, rows = 0, []
+        absent = sorted({t["image"] for t in keyd if t["image"] not in fin.objects})
+        if absent:
+            die(f"File --final thiếu {len(absent)} ảnh có bẫy ({', '.join(absent[:3])}...): bạn export nhầm Task hoặc thiếu ảnh. "
+                "Không tính bẫy trên ảnh vắng mặt (sẽ làm tỉ lệ bắt bẫy sai).")
         for t in keyd:
             n = t["image"]
-            if n not in fin.objects:
-                continue
             F = split_ignore(tax, fin.objects[n])[0]
             def bx(b):
                 return (b[0], b[1], b[0] + b[2], b[1] + b[3])

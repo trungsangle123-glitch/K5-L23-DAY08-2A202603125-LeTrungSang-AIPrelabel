@@ -1,6 +1,6 @@
 # Day 08 Lab — AI hỗ trợ gán nhãn: Pre-label, Review, Calibration
 
-**Cá nhân · 6–8 giờ (chia 3 buổi) · 36 ảnh đường phố châu Á · detection + segmentation · CVAT**
+**Cá nhân · 7–10 giờ (chia 3 buổi) · 36 ảnh đường phố châu Á · detection + segmentation · CVAT**
 
 Hôm nay **máy gán sẵn, người sửa**. Bạn sẽ cài và chạy các công cụ pre-label **từ đơn giản đến phức tạp**
 (YOLO26 → SAM 2.1 → YOLOE → Grounding DINO / OWLv2 → SAM 3), đưa kết quả vào CVAT, **review có quy trình**,

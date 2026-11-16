@@ -118,6 +118,8 @@ Task trong danh sách → **⋮ → Automatic annotation** → chọn **Model** 
 
 ### B3. Model CỦA BẠN chạy trong CVAT (`cvat-cli`)
 
+*(Cờ và lệnh dưới đây đã đối chiếu với `cvat-cli --help` bản 2.83; chưa thử với mọi gói cvat.ai. Tài khoản đăng nhập bằng Google/GitHub không có mật khẩu: dùng Personal Access Token qua `CVAT_ACCESS_TOKEN`. Gói miễn phí có thể giới hạn tính năng / quota: nếu bị chặn, ghi vào REPORT.)*
+
 Cách này **không cần máy chủ CVAT có GPU hay serverless**: model chạy trên máy bạn, CVAT chỉ nhận kết quả. Dùng được ở cvat.ai lẫn CVAT Docker, cả trên Mac.
 
 ```bash

@@ -86,7 +86,7 @@ Mỗi câu chốt xong phải có **ảnh ví dụ** (`img_0xx`) và ghi vào b�
 
 ## 7. QC và phiên bản
 
-- Ngưỡng QC: xem `submission/taxonomy.json` mục `rules` (**không sửa**): IoU chấp nhận 0.9 (mask 0.85), ảnh lỗi ≤ 2%, bắt bẫy ≥ 90%.
+- Ngưỡng QC: xem `submission/taxonomy.json` mục `rules` (**không sửa**): IoU chấp nhận 0.9 (mask 0.85), ảnh lỗi ≤ 2%, bắt bẫy ≥ 80% (≥ 10/12).
 - Người quyết ca mơ hồ: bạn (lab cá nhân); ghi từng quyết định vào `calibration_decisions.csv`.
 - Mọi thay đổi làm đổi nhãn → tăng phiên bản.
 

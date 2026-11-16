@@ -93,7 +93,7 @@ def main():
     for c, (t, why) in best.items():
         L.append(f"| {c} | {'(mặc định)' if t is None else t} | {why} |")
     thr_arg = ",".join(f"{c}={t}" for c, (t, _) in best.items() if t is not None)
-    L += ["", "Dán vào lệnh prelabel: `--thr " + thr_arg + "`", "",
+    L += ["", "Dán vào lệnh prelabel: `--thr \"" + thr_arg + "\"`", "",
           "Lưu ý: nhãn chuẩn pilot dựng từ pre-label ngưỡng 0.10 nên vật có điểm < 0.10 vắng mặt trong GT (recall thật thấp hơn); pilot chỉ có vài ảnh -> ngưỡng là ước lượng thô; lớp có ít vật (xem n_gold) thì kết luận yếu."]
     text = "\n".join(L) + "\n"
     Path(str(out) + ".md").write_text(text, encoding="utf8")

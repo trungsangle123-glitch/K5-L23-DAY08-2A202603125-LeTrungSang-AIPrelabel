@@ -1,6 +1,6 @@
 # Checkpoints — Day 08
 
-Bài cá nhân, dự kiến **6–8 giờ** (nên chia 3 buổi). Giờ trong bảng là mốc cho người làm nhanh, máy có GPU. Mốc tính từ lúc bắt đầu, là điểm **tự kiểm tra**, không phải hạn nộp. Deadline do giảng viên/coach thông báo.
+Bài cá nhân, dự kiến **7–10 giờ** (nên chia 3 buổi). Giờ trong bảng là mốc cho người làm nhanh, máy có GPU. Mốc tính từ lúc bắt đầu, là điểm **tự kiểm tra**, không phải hạn nộp. Deadline do giảng viên/coach thông báo.
 
 | Mốc | Mục tiêu | Tự kiểm tra |
 |---|---|---|

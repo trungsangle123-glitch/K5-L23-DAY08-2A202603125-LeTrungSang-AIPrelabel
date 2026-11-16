@@ -6,7 +6,7 @@ Các model (từ đơn giản đến phức tạp):
   yolo26   Detector closed-set (COCO 80 lớp).  Thêm --segmenter native để dùng yolo26-seg (mask), hoặc sam2.
   yoloe    Open-vocabulary thời gian thực (gõ chữ -> box + mask).  Cần --prompts.
   gdino    Grounding DINO (HF transformers), gõ chữ -> box.  Nặng hơn, chậm hơn.
-  owlv2    OWLv2 (HF), gõ chữ -> box; hoặc --exemplar (tìm vật giống ảnh mẫu).
+  owlv2    OWLv2 (HF), gõ chữ -> box.
   sam3     SAM 3 (HF, gated), gõ chữ -> mọi instance + mask.  Cần quyền truy cập, xem docs/SETUP.md.
 Bộ tách mask (--segmenter):
   none     chỉ box (mặc định)
@@ -213,7 +213,7 @@ class Owlv2Backend(Backend):
 
 
 class Sam3Backend(Backend):
-    """SAM 3 (concept prompting) qua HF transformers. Cần: huggingface-cli login + được cấp quyền facebook/sam3."""
+    """SAM 3 (concept prompting) qua HF transformers. Cần: hf auth login + được cấp quyền facebook/sam3."""
     needs_prompts = True
     native_masks = True
 
@@ -231,7 +231,7 @@ class Sam3Backend(Backend):
             self.model = Sam3Model.from_pretrained(mid).to(self.device).eval()
         except Exception as e:  # noqa
             die(f"Không tải được {mid}: {e}\nSAM 3 là model gated: xin quyền tại https://huggingface.co/{mid} "
-                "rồi chạy `huggingface-cli login` (xem docs/SETUP.md, mục SAM 3).")
+                "rồi chạy `hf auth login` (xem docs/SETUP.md, mục SAM 3).")
         self.phrases = list(self.prompts.keys())
 
     def detect(self, path):

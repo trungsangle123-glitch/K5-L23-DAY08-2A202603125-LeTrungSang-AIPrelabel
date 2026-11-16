@@ -26,7 +26,7 @@ python -m pip install -U pip
 pip install -r requirements.txt
 ```
 
-Windows (PowerShell; hoặc dùng Git Bash / WSL và làm theo khối macOS/Linux):
+Windows: cài trước **Python 3.12** (python.org, tick "Add to PATH") và **Git** (https://git-scm.com, kèm Git Bash). Rồi dùng PowerShell như dưới, hoặc Git Bash / WSL với khối macOS/Linux:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -80,7 +80,7 @@ SAM 3 là model **gated** trên HuggingFace: phải xin quyền và đăng nhậ
 2. Tạo **access token** loại *read* tại https://huggingface.co/settings/tokens.
 3. Đăng nhập (token **không** được commit, không dán vào file trong repo):
    ```bash
-   hf auth login           # hoặc: export HF_TOKEN=<token của bạn>
+   hf auth login           # hoặc đặt biến môi trường HF_TOKEN (bash: export HF_TOKEN=...; PowerShell: $env:HF_TOKEN="...")
    ```
 4. `python scripts/download_models.py --set sam3` rồi `python scripts/prelabel.py --model sam3 ...` (xem [MODELS.md](MODELS.md), mục E).
 

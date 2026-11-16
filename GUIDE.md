@@ -1,6 +1,6 @@
 # Hướng dẫn làm lab (từng Part)
 
-Bài **cá nhân**, khoảng **6–8 giờ thực tế** (máy yếu / lần đầu dùng CVAT: nhiều hơn) → chia **3 buổi**: Part 0–2 · Part 3–4 · Part 5–6. Các mục đánh dấu *(tuỳ chọn)* có thể bỏ nếu thiếu giờ; mục không đánh dấu là bắt buộc. Mốc tự kiểm tra ở [CHECKPOINTS.md](CHECKPOINTS.md).
+Bài **cá nhân**, khoảng **7–10 giờ thực tế** (máy yếu / lần đầu dùng CVAT: nhiều hơn) → chia **3 buổi**: Part 0–2 · Part 3–4 · Part 5–6. Các mục đánh dấu *(tuỳ chọn)* có thể bỏ nếu thiếu giờ; mục không đánh dấu là bắt buộc. Mốc tự kiểm tra ở [CHECKPOINTS.md](CHECKPOINTS.md).
 Lệnh chạy **từ thư mục gốc repo**, venv đã kích hoạt. Mỗi Part có **sản phẩm** phải commit (commit theo từng Part).
 
 ```
@@ -61,7 +61,7 @@ Một mẫu gốc, ba vai: **không bao giờ** dùng gold để chọn ngưỡn
 
 ---
 
-## Part 0 — Cài đặt (~25 phút)
+## Part 0 — Cài đặt (30–45 phút)
 
 1. Tạo repo cá nhân từ repo đề: **Use this template / Fork** → đặt tên theo [SUBMISSION.md](SUBMISSION.md) (public) → `git clone`.
 2. Làm theo [docs/SETUP.md](docs/SETUP.md): tạo venv, `pip install -r requirements.txt`, `python scripts/download_models.py --set core`.
@@ -72,7 +72,7 @@ Một mẫu gốc, ba vai: **không bao giờ** dùng gold để chọn ngưỡn
 
 **Sản phẩm:** repo chạy được `check_env.py`, `STUDENT.md`.
 
-## Part 1 — Label contract và tập gold gán tay (~45 phút)
+## Part 1 — Label contract và tập gold gán tay (45–60 phút)
 
 **Mục tiêu:** có **chuẩn** của riêng bạn trước khi thấy máy. Nếu bạn gán gold sau khi đã thấy nhãn máy, bạn sẽ bị "neo" và không đo được thiên kiến.
 
@@ -86,7 +86,7 @@ Một mẫu gốc, ba vai: **không bao giờ** dùng gold để chọn ngưỡn
 **Sản phẩm:** `labels/gold_manual.json`, dòng `gold_manual` trong `time_log.csv`.
 > *Tự hỏi:* tôi đã dùng quy tắc nào của v1.0 mà thấy lúng túng? Có ca nào hai cách hiểu đều hợp lý không?
 
-## Part 2 — Tour model (~60 phút)
+## Part 2 — Tour model (60–90 phút)
 
 Làm theo [docs/MODELS.md](docs/MODELS.md), mục A → F. Mỗi lần chạy `prelabel.py` bạn ghi **một dòng** vào `submission/model_log.csv` (copy từ `work/runs.csv`, rồi điền `what_went_right`, `what_went_wrong`, `decision` **bằng mắt nhìn ảnh**).
 
@@ -98,7 +98,7 @@ Cuối Part 2:
 
 **Sản phẩm:** `model_log.csv`, nháp `recipe.md`.
 
-## Part 3 — Pilot: duyệt và chọn ngưỡng theo lớp (~40 phút)
+## Part 3 — Pilot: duyệt và chọn ngưỡng theo lớp (45–60 phút)
 
 1. Gộp pre-label của pilot ở ngưỡng thấp **0.10** (để GT pilot không bị cắt cụt ở 0.3; bù lại có nhiều box thừa phải xoá):
    ```bash
@@ -119,7 +119,7 @@ Cuối Part 2:
 **Sản phẩm:** `labels/pilot_reviewed.json`, `qc/threshold_sweep.{csv,md,png}`, `recipe.md` (có ngưỡng và lý do).
 > *Tự hỏi:* vì sao chọn ngưỡng **theo lớp**, không dùng một ngưỡng chung? Recall mục tiêu 90% có hợp lý cho `person`? cho `three_wheeler`?
 
-## Part 4 — Pre-label batch, ảnh bẫy và review (~60 phút)
+## Part 4 — Pre-label batch, ảnh bẫy và review (60–90 phút)
 
 1. Gộp pre-label cho **24 ảnh batch** và **6 ảnh gold** (gold vào file để đo **máy** so với gold; gold **không** đưa vào CVAT để duyệt):
    ```bash
@@ -146,7 +146,7 @@ Cuối Part 2:
 **Sản phẩm:** `prelabel/pre_traps.coco.json`, `prelabel/traps_key.json`, `labels/batch_reviewed.json`, `qc/review_stats.{json,md}`, `time_log.csv` (`batch_review`).
 > *Tự hỏi:* `accepted` 84% nhưng bắt bẫy 60% nghĩa là gì? Vì sao `added` thấp không có nghĩa là máy không sót vật?
 
-## Part 5 — Segmentation và CVAT trực tiếp (~35 phút)
+## Part 5 — Segmentation và CVAT trực tiếp (45–60 phút)
 
 **5a. Mask từ SAM 2.** Tạo pre-label mask cho 8 ảnh `seg`:
 ```bash
@@ -173,7 +173,7 @@ Không chạy được (gói cvat.ai, Mac…)? Ghi **lỗi đầy đủ + bạn 
 
 **Sản phẩm:** `prelabel/seg_pre.coco.json`, `labels/seg_reviewed.json`, `qc/review_stats_seg.{json,md}`, `REPORT.md` mục 5.
 
-## Part 6 — Calibration, QC và báo cáo (~60 phút)
+## Part 6 — Calibration, QC và báo cáo (60–90 phút)
 
 Chi tiết từng tầng: [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md).
 
