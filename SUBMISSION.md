@@ -12,7 +12,7 @@ Mỗi học viên **một repo public**: fork repo đề, đổi tên theo mẫu
 
 ## Trước khi nộp
 
-1. **Đổi dòng tiêu đề của `README.md`**:
+1. **Đổi dòng tiêu đề của `README.md`** (dòng bắt đầu bằng `# Day 08 Lab —`, không phải dòng đầu tiên của file):
    ```markdown
    # Day 08 Lab — 22001234 - Nguyễn Văn A
    ```
@@ -24,7 +24,7 @@ Hạn nộp do giảng viên/coach thông báo.
 ## Cấu trúc bắt buộc
 
 ```text
-README.md                          # dòng đầu: # Day 08 Lab — <MSHV> - <Họ và tên>
+README.md                          # có dòng tiêu đề: # Day 08 Lab — <MSHV> - <Họ và tên>
 STUDENT.md                         # thông tin + kết quả tóm tắt
 data/ATTRIBUTION.csv               # giữ nguyên
 submission/
@@ -35,7 +35,8 @@ submission/
 ├── guidelines/
 │   └── guideline_v1.1_calibrated.md   # CHỈ phần bổ sung so với v1.0
 ├── prelabel/
-│   ├── pre_traps.coco.json        # file đã nạp vào CVAT (24 ảnh batch + 4 gold, có bẫy)
+│   ├── pre_traps_import.coco.json # file đã nạp vào CVAT (24 ảnh batch, có bẫy)
+│   ├── pre_traps.coco.json        # đầy đủ (batch + gold), dùng cho review_stats
 │   └── traps_key.json             # đáp án bẫy
 ├── labels/
 │   ├── gold_manual.json           # 4 ảnh gán tay

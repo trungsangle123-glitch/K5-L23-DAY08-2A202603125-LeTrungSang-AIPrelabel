@@ -2,7 +2,7 @@
 
     python scripts/qc_sample.py --n 5 --seed 42
 
-Mẫu = mọi ảnh có box tick `can_review` (ca khó bạn tự đánh dấu) + n ảnh ngẫu nhiên trong phần còn lại.
+Mẫu = tối đa --max-hard (3) ảnh có box tick `can_review` (ca khó bạn tự đánh dấu) + n ảnh ngẫu nhiên trong phần còn lại.
 Nguồn: submission/release/final_det.coco.json (chạy build_release.py trước; đã gồm bản sửa qc_fixed nếu có).
 Đầu ra: submission/qc/qc_sample.csv, submission/qc/qc_review.csv (phiếu để điền), work/qc/review/<ảnh>.jpg (có id từng vật).
 """
@@ -24,6 +24,7 @@ def main() -> None:
     ap.add_argument("--src", default=str(SUB / "release" / "final_det.coco.json"), help="mặc định: nhãn cuối từ build_release.py")
     ap.add_argument("--n", type=int, default=5)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--max-hard", type=int, default=3, help="tối đa bao nhiêu ảnh `can_review` đưa vào mẫu (lấy ảnh có nhiều box can_review nhất)")
     ap.add_argument("--force", action="store_true", help="ghi đè qc_review.csv đã có (CẨN THẬN: mất phần đã điền)")
     a = ap.parse_args()
     tax = load_taxonomy()
@@ -32,7 +33,11 @@ def main() -> None:
         die(f"Chưa có {rel(p)}. Chạy `python scripts/build_release.py` trước.")
     cs = load_coco(p)
     batch = [n for n in images_of(["batch"]) if n in cs.objects]
-    hard = [n for n in batch if any(truthy(o.attrs.get("can_review")) for o in cs.objects[n])]
+    cnt = {n: sum(truthy(o.attrs.get("can_review")) for o in cs.objects[n]) for n in batch}
+    hard_all = sorted([n for n in batch if cnt[n] > 0], key=lambda n: (-cnt[n], n))
+    hard = sorted(hard_all[:a.max_hard])
+    if len(hard_all) > a.max_hard:
+        print(f"Có {len(hard_all)} ảnh can_review; chỉ lấy {a.max_hard} ảnh nhiều nhất (--max-hard để đổi).")
     pool = [n for n in batch if n not in hard]
     k = min(a.n, len(pool))
     rnd = sorted(random.Random(a.seed).sample(pool, k))

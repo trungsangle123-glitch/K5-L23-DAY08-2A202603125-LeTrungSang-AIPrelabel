@@ -6,7 +6,7 @@
 
 Với mỗi lớp và mỗi ngưỡng t: tính precision / recall / F1 (IoU >= match_iou, cùng lớp).
 Gợi ý ngưỡng theo lớp = ngưỡng CAO NHẤT mà recall còn >= --recall-target (ít box thừa nhất trong khi không bỏ sót thêm).
-Nếu không ngưỡng nào đạt mục tiêu: lấy ngưỡng có F1 cao nhất và cảnh báo. Ghi submission/qc/threshold_sweep.csv/.png/.md.
+Lớp có < 5 vật gold, hoặc không ngưỡng nào <= 0.5 đạt mục tiêu: KHÔNG chọn (dùng ngưỡng mặc định của merge_prelabels --conf). Ghi submission/qc/threshold_sweep.csv/.png/.md.
 """
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ def main():
     ap.add_argument("--gold", required=True, help="nhãn chuẩn: nhãn gán tay (gold_manual.json), hoặc pilot_reviewed.json ở bài nâng cao")
     ap.add_argument("--recall-target", type=float, help="mặc định lấy từ taxonomy.rules.recall_target")
     ap.add_argument("--step", type=float, default=0.05)
+    ap.add_argument("--min-objects", type=int, default=5, help="lớp có ít hơn số vật này trong ảnh gold thì không chọn ngưỡng riêng (mặc định 5)")
+    ap.add_argument("--max-thr", type=float, default=0.5, help="trần ngưỡng được chọn (mặc định 0.5): chặn ngưỡng cao do vài vật")
     ap.add_argument("--out", default=str(SUB / "qc" / "threshold_sweep"))
     a = ap.parse_args()
     tax = load_taxonomy()
@@ -59,13 +61,13 @@ def main():
             series.append((t, tp, fp, fn, p, rc, f1))
             rows.append({"class": cls, "thr": t, "tp": tp, "fp": fp, "fn": fn, "precision": round(p, 3),
                          "recall": round(rc, 3), "f1": round(f1, 3), "n_gold": n_gold})
-        ok = [s for s in series if s[5] >= tgt]
-        if n_gold == 0:
-            best[cls] = (None, f"không có vật {cls} trong ảnh gold -> không chọn được ngưỡng, dùng giá trị mặc định")
+        ok = [s for s in series if s[5] >= tgt and s[0] <= a.max_thr]
+        if n_gold < a.min_objects:
+            best[cls] = (None, f"chỉ {n_gold} vật trong ảnh gold (< {a.min_objects}): mẫu quá ít, KHÔNG chọn ngưỡng theo lớp này, dùng ngưỡng mặc định")
         elif ok:
-            s = max(ok, key=lambda s: s[0]); best[cls] = (s[0], f"recall {s[5] * 100:.0f}% (>= {tgt * 100:.0f}%), precision {s[4] * 100:.0f}%")
+            s = max(ok, key=lambda s: s[0]); best[cls] = (s[0], f"recall {s[5] * 100:.0f}% (>= {tgt * 100:.0f}%), precision {s[4] * 100:.0f}% ({n_gold} vật gold)")
         else:
-            s = max(series, key=lambda s: (s[6], -s[0])); best[cls] = (s[0], f"KHÔNG đạt recall {tgt * 100:.0f}% ở ngưỡng nào (tối đa {max(x[5] for x in series) * 100:.0f}%); lấy F1 cao nhất ({s[6]:.2f})")
+            best[cls] = (None, f"không ngưỡng nào <= {a.max_thr} đạt recall {tgt * 100:.0f}% (tối đa {max(x[5] for x in series) * 100:.0f}%, {n_gold} vật): dùng ngưỡng mặc định, nói rõ trong báo cáo")
     out = Path(a.out)
     write_csv(Path(str(out) + ".csv"), ["class", "thr", "tp", "fp", "fn", "precision", "recall", "f1", "n_gold"], rows)
     try:
@@ -92,7 +94,7 @@ def main():
     for c, (t, why) in best.items():
         L.append(f"| {c} | {'(mặc định)' if t is None else t} | {why} |")
     thr_arg = ",".join(f"{c}={t}" for c, (t, _) in best.items() if t is not None)
-    L += ["", "Dán vào lệnh prelabel: `--thr \"" + thr_arg + "\"`", "",
+    L += ["", "Dán vào lệnh merge_prelabels (lớp không có trong chuỗi dùng `--conf` mặc định 0.3): `--thr \"" + thr_arg + "\"`", "",
           "Lưu ý: bạn chọn ngưỡng trên chính nhãn gold, nên precision / recall của máy trên gold ở ngưỡng đã chọn là con số **lạc quan** (chọn và chấm trên cùng dữ liệu); chỉ có vài ảnh -> ngưỡng là ước lượng thô; lớp có ít vật (xem n_gold) thì kết luận yếu."]
     text = "\n".join(L) + "\n"
     Path(str(out) + ".md").write_text(text, encoding="utf8")

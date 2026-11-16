@@ -6,11 +6,11 @@ Luật chơi: [RULES.md](RULES.md) · Chấm điểm: [RUBRIC.md](RUBRIC.md) · 
 ```
 TRƯỚC LỚP  Part 0  Cài đặt + tải 3 model + Project CVAT     ~45'   (không tính giờ)
 TRÊN LỚP   Part 1  Gán tay 4 ảnh gold (KHÔNG AI)            25'
-           Part 2  Tour 3 model: YOLO26 · YOLOE · SAM       35'
-           Part 3  Chọn ngưỡng theo lớp                     15'
+           Part 2  Tour 3 model: YOLO26 · YOLOE · SAM       30'
+           Part 3  Chọn ngưỡng theo lớp                     10'
            nghỉ                                             10'
-           Part 4  Pre-label 24 ảnh + 12 bẫy + review       80'
-           Part 5  Mask SAM cho 3 vật                       20'
+           Part 4  Pre-label 24 ảnh + 12 bẫy + review       95'
+           Part 5  Mask SAM cho 3 vật                       15'
            Part 6  Calibration + QC + báo cáo               45'
            nộp                                              10'
                                                         ----------
@@ -47,7 +47,7 @@ Ba tập ảnh (`data/split.csv`, 36 ảnh):
 | 0 | cài đặt (trước lớp) | `pip install`, `download_models.py`, `check_env.py` | repo chạy được |
 | 1 | gán tay 4 ảnh gold | `prepare_workdirs.py` + CVAT | `labels/gold_manual.json` |
 | 2 | thử YOLO26, YOLOE, SAM | `prelabel.py` | `model_log.csv` (≥ 4 dòng) |
-| 3 | ngưỡng theo lớp | `merge_prelabels.py`, `threshold_sweep.py` | `qc/threshold_sweep.*` |
+| 3 | ngưỡng theo lớp | `threshold_sweep.py` | `qc/threshold_sweep.*` |
 | 4 | review 24 ảnh + bẫy | `inject_traps.py`, `review_stats.py` | `labels/batch_reviewed.json`, `qc/review_stats.*` |
 | 5 | mask 3 vật | `sam2_points.py` | `masks/*.jpg` (≥ 3) |
 | 6 | calibration + QC + báo cáo | `build_release.py`, `qc_sample.py`, `qc_report.py`, `check_submission.py` | `REPORT.md`, `guideline_v1.1`, `calibration_decisions.csv` |
@@ -60,9 +60,9 @@ Ba tập ảnh (`data/split.csv`, 36 ảnh):
 
 1. **Fork** repo thành repo **public** của bạn (tên: [SUBMISSION.md](SUBMISSION.md)), `git clone`; đặt `git config user.name` và `user.email`.
 2. Làm theo [docs/SETUP.md](docs/SETUP.md): venv, `pip install -r requirements.txt`, `python scripts/download_models.py --set core` (3 model, ~0.35 GB).
-3. `python scripts/check_env.py` → **SẴN SÀNG**. **Máy yếu / không GPU:** dùng [Google Colab](docs/COLAB.md) thay cho bước 2–3.
+3. `python scripts/check_env.py` → **SẴN SÀNG**. **Máy yếu / không GPU:** dùng [Google Colab](docs/COLAB.md) để chạy model; trên máy bạn chỉ cần phần nhẹ: `pip install -r requirements-local.txt` (không có torch / ultralytics: `check_env.py` sẽ báo FAIL ở các mục đó, bình thường).
 4. Tạo **Project CVAT** từ `cvat/labels_generated.json` ([docs/CVAT_AI.md](docs/CVAT_AI.md) mục 1) và đọc một lượt [label contract](guideline/guideline_v1.0_label_contract.md).
-5. Điền [STUDENT.md](STUDENT.md), đổi dòng đầu `README.md`. Commit.
+5. Điền [STUDENT.md](STUDENT.md), đổi dòng tiêu đề `# Day 08 Lab —` trong `README.md`. Commit.
 
 ## Part 1 — Gold: gán tay 4 ảnh, không AI (25 phút)
 
@@ -73,7 +73,7 @@ Ba tập ảnh (`data/split.csv`, 36 ảnh):
 3. Bấm giờ → `submission/time_log.csv` dòng `gold_manual`. Ca không chắc quy tắc: tick `can_review` và ghi 1 dòng vào mục "Ghi chú" của `REPORT.md` (đó là nguyên liệu calibration).
 4. Export COCO 1.0 (không lưu ảnh) → `submission/labels/gold_manual.json`; `python scripts/validate_labels.py --all`. Commit.
 
-## Part 2 — Tour 3 model (35 phút)
+## Part 2 — Tour 3 model (30 phút)
 
 Chạy **tay** trên 8 ảnh `pilot` (ảnh không phải gold). Mỗi lần chạy ghi **một dòng** `submission/model_log.csv` (copy từ `work/runs.csv`, điền `what_went_right` / `what_went_wrong` / `decision` **bằng mắt nhìn `viz/`**). Chi tiết: [docs/MODELS.md](docs/MODELS.md).
 
@@ -99,20 +99,20 @@ python scripts/prelabel.py --model yoloe --classes three_wheeler --split all --c
 
 **Sản phẩm:** `model_log.csv` (≥ 4 dòng, ≥ 3 model: YOLO26, YOLOE, **SAM**).
 
-## Part 3 — Chọn ngưỡng theo lớp (15 phút)
+## Part 3 — Chọn ngưỡng theo lớp (10 phút)
 
 ```bash
-python scripts/merge_prelabels.py work/prelabel/yoloe_all/pre.coco.json work/prelabel/y26_all/pre.coco.json \
-    --conf 0.1 --iou 0.6 --split gold --out work/prelabel/merged_gold/pre.coco.json
-python scripts/threshold_sweep.py --pred work/prelabel/merged_gold/pre.coco.json --gold submission/labels/gold_manual.json
+python scripts/threshold_sweep.py --pred work/prelabel/y26_all/pre.coco.json work/prelabel/yoloe_all/pre.coco.json \
+    --gold submission/labels/gold_manual.json
 ```
 
 Mở `submission/qc/threshold_sweep.md` và `.png` ([cách đọc](docs/THRESHOLD.md)). Chép chuỗi `--thr "..."` để dùng ở Part 4. Ghi vào `REPORT.md` mục 1 ngưỡng từng lớp và lý do.
+**Lớp ít vật** (< 5 vật trong 4 ảnh gold, thường bus / truck / bicycle) **không được chọn ngưỡng riêng**: script để mặc định 0.3 và nói rõ. Đó là kết quả đúng, đừng ép.
 **Giới hạn phải nói:** chỉ 4 ảnh gold; bạn chọn và chấm trên cùng dữ liệu, nên precision/recall của máy trên gold là **lạc quan**.
 
 **Sản phẩm:** `qc/threshold_sweep.{csv,md,png}`.
 
-## Part 4 — Pre-label, ảnh bẫy và review (80 phút)
+## Part 4 — Pre-label, ảnh bẫy và review (95 phút)
 
 1. Gộp pre-label cho 24 ảnh batch (+ 4 gold, chỉ để đo máy; gold **không** vào CVAT):
    ```bash
@@ -123,9 +123,9 @@ Mở `submission/qc/threshold_sweep.md` và `.png` ([cách đọc](docs/THRESHOL
    ```bash
    python scripts/inject_traps.py --pre work/prelabel/merged_review/pre.coco.json --student <MSHV>
    ```
-   Ra `submission/prelabel/pre_traps.coco.json` (nạp CVAT) và `traps_key.json` (**đừng mở**).
-3. Task `batch-review` từ `work/tasks/review/` (24 ảnh), **Upload annotations → COCO 1.0** → `pre_traps.coco.json` ([CVAT_AI.md](docs/CVAT_AI.md) mục 3). Đếm số box ở ảnh đầu.
-4. **Review** theo [checklist 4 bước](docs/REVIEW_CHECKLIST.md): ẩn nhãn máy, quét ảnh trước → bỏ sót → thừa → sai nhãn → lỏng. Nghỉ mỗi ~10 ảnh. Bấm giờ (`batch_review`). Mở `traps_key.json` **chỉ sau khi** export.
+   Ra `pre_traps_import.coco.json` (nạp CVAT), `pre_traps.coco.json` (đầy đủ, dùng cho đo) và `traps_key.json` (**đừng mở**), tất cả trong `submission/prelabel/`.
+3. Task `batch-review` từ `work/tasks/review/` (24 ảnh), **Upload annotations → COCO 1.0** → **`pre_traps_import.coco.json`** (chỉ 24 ảnh batch; [CVAT_AI.md](docs/CVAT_AI.md) mục 3). Đếm số box ở ảnh đầu.
+4. **Review** theo [checklist 4 bước](docs/REVIEW_CHECKLIST.md) (khoảng 3 phút / ảnh; 6 ảnh dày xe máy là 005, 018, 021, 024, 028, 029: **cụm xe nhỏ < 20 px dùng `ignore_region`, đừng vẽ từng vật**): ẩn nhãn máy, quét ảnh trước → bỏ sót → thừa → sai nhãn → lỏng. Nghỉ mỗi ~10 ảnh. Bấm giờ (`batch_review`). Mở `traps_key.json` **chỉ sau khi** export.
 5. Export → `submission/labels/batch_reviewed.json`; `validate_labels.py --all`. Đo:
    ```bash
    python scripts/review_stats.py --pre submission/prelabel/pre_traps.coco.json --final submission/labels/batch_reviewed.json \
@@ -136,7 +136,7 @@ Mở `submission/qc/threshold_sweep.md` và `.png` ([cách đọc](docs/THRESHOL
 **Sản phẩm:** `prelabel/pre_traps.coco.json`, `prelabel/traps_key.json`, `labels/batch_reviewed.json`, `qc/review_stats.{json,md}`, `time_log.csv` (`batch_review`).
 > *Tự hỏi:* accepted 84% mà bắt bẫy 60% nghĩa là gì? Vì sao `added` thấp không có nghĩa máy không sót vật?
 
-## Part 5 — Mask SAM cho 3 vật (20 phút)
+## Part 5 — Mask SAM cho 3 vật (15 phút)
 
 Chọn **3 vật khó** (xe ba bánh có người lái, xích lô, vật bị che). Cho mỗi vật dùng SAM với click (mô phỏng Interactor của CVAT), **phiên bản SAM bạn chọn** (`--sam`):
 
@@ -161,6 +161,13 @@ Chi tiết: [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md).
 **Sản phẩm:** `qc/calibration_decisions.csv`, `guidelines/guideline_v1.1_calibrated.md`, `release/`, `qc/qc_sample.csv`, `qc/qc_review.csv`, `qc/qc_report_auto.md`, `REPORT.md`.
 
 ---
+
+## Nếu bị trễ giờ (cắt theo thứ tự này)
+1. Part 5: làm **2** vật thay vì 3 (`submission/masks/` vẫn cần ≥ 3 ảnh: thêm 1 ảnh đổi phiên bản SAM).
+2. Part 4: không vẽ vật < 20 px; dùng `ignore_region`.
+3. Part 6: `qc_sample.py --n 3`; vẫn bắt buộc ≥ 3 quyết định calibration.
+
+Không bao giờ cắt: gold gán tay, ảnh bẫy, `REPORT.md` mục 7 (quyết định + mẫu số).
 
 ## Máy yếu, Windows, Mac
 

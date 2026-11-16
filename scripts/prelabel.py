@@ -408,7 +408,7 @@ def main():
     params = " ".join(sys.argv[1:])
     runs = WORK / "runs.csv"
     rows = read_csv(runs) if runs.exists() else []
-    run = {"run_id": f"r{len(rows) + 1:02d}", "part": "", "model": a.model + (f"-{a.size}" if "yolo" in a.model else ""),
+    run = {"run_id": f"r{len(rows) + 1:02d}", "part": "", "model": a.model + (f"-{a.size}" if "yolo" in a.model else "") + (f"+sam({a.sam})" if a.segmenter in ("sam", "sam2") else ""),
            "params": params, "split": a.split or "custom", "n_boxes": len(anns),
            "sec_per_img": round(dt / max(1, len(images)), 2), "what_went_right": "", "what_went_wrong": "", "decision": "",
            "out": rel(out), "device": device, "n_images": len(images), "n_masks": sum(1 for x in anns if x["segmentation"]),

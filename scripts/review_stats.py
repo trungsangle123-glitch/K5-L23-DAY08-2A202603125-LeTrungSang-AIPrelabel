@@ -31,6 +31,21 @@ def pc(a, b):
     return "n/a" if not b else f"{a}/{b} = {a / b * 100:.1f}%"
 
 
+def wilson(k, n, z=1.96):
+    if not n:
+        return None
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / d
+    return max(0.0, c - h), min(1.0, c + h)
+
+
+def ci(k, n):
+    w = wilson(k, n)
+    return "" if w is None else f" (KTC 95%: {w[0] * 100:.0f}–{w[1] * 100:.0f}%)"
+
+
 def rate(a, b):
     return None if not b else a / b
 
@@ -199,7 +214,8 @@ def main():
          f"| edited (sửa) | {edi} | {pc(edi, n_pre)} | {n_pre} box máy |",
          f"| deleted (xoá) | {dele} | {pc(dele, n_pre)} | {n_pre} box máy |",
          f"| added (vẽ thêm) | {add} | {pc(add, n_final)} | {n_final} đối tượng sau duyệt |", "",
-         f"(Trong số deleted + added, {n_changed_cls} trường hợp là **đổi lớp**: máy gán sai lớp, box đúng chỗ.)", "",
+         f"Trong số deleted + added, **{n_changed_cls} trường hợp là đổi lớp** (máy gán sai lớp, box đúng chỗ): đó không phải máy bỏ sót. "
+         f"Số vật máy **sót thật** ≈ added − đổi lớp = {max(0, add - n_changed_cls)}.", "",
          "### Theo lớp", "| Lớp | accepted | edited | deleted | added |", "|---|---|---|---|---|"]
     for c in tax.object_classes:
         if c in per_cls:
@@ -210,7 +226,8 @@ def main():
         f = lambda x: "n/a" if x is None else f"{x * 100:.1f}%"  # noqa: E731
         L += ["", "## 2. So với gold (nhãn gán tay từ đầu)", f"Ảnh gold: {g['images']}; đối tượng gold: {g['gold_objects']} (mẫu số của recall)",
               "| | TP | FP | FN | Precision | Recall |", "|---|---|---|---|---|---|",
-              f"| Máy (pre-label) | {g['pre']['tp']} | {g['pre']['fp']} | {g['pre']['fn']} | {f(g['pre']['precision'])} | {f(g['pre']['recall'])} |"]
+              f"| Máy (pre-label) | {g['pre']['tp']} | {g['pre']['fp']} | {g['pre']['fn']} | {f(g['pre']['precision'])}{ci(g['pre']['tp'], g['pre']['tp'] + g['pre']['fp'])} | {f(g['pre']['recall'])}{ci(g['pre']['tp'], g['pre']['tp'] + g['pre']['fn'])} |",
+              "", "*Lạc quan: ngưỡng được chọn trên chính các ảnh gold này (in-sample), và chỉ có 4 ảnh. Đọc khoảng tin cậy, đừng đọc con số đơn.*", ""]
         if g["final"]:
             L += [f"| Sau duyệt của bạn ({g['final']['images']} ảnh gold có trong nhãn cuối) | {g['final']['tp']} | {g['final']['fp']} | {g['final']['fn']} | {f(g['final']['precision'])} | {f(g['final']['recall'])} |", "",
                   f"- **Residual** (lỗi của máy còn trong nhãn của bạn): {g['residual_errors']} (đếm FP + FN; một lỗi sai lớp hoặc lệch vị trí tính 2)",
@@ -219,7 +236,7 @@ def main():
             L += ["", "(Ảnh gold không nằm trong nhãn sau duyệt: không tính residual / new error. Đó là chủ ý: duyệt lại ảnh bạn vừa tự gán tay sẽ đo trí nhớ, không đo thiên kiến.)"]
     if trap_res:
         t = trap_res
-        L += ["", "## 3. Ảnh bẫy", f"- Bắt được {pc(t['caught'], t['n'])} (ngưỡng đạt: {r['trap_catch_min'] * 100:.0f}%)"]
+        L += ["", "## 3. Ảnh bẫy", f"- Bắt được {pc(t['caught'], t['n'])}{ci(t['caught'], t['n'])} (ngưỡng đạt: {r['trap_catch_min'] * 100:.0f}%). Chỉ {t['n']} bẫy nên khoảng tin cậy rất rộng: đọc cùng danh sách bẫy lọt, đừng kết luận chỉ từ %."]
         for ty, (c, n) in t["by_type"].items():
             L.append(f"  - {ty}: {c}/{n}")
         if t["missed"]:

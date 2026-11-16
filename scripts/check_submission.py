@@ -44,9 +44,11 @@ def main() -> None:
     tax = load_taxonomy()
     if tax.rules != EXPECTED_RULES:
         E("taxonomy.json: mục `rules` bị đổi so với bản gốc (RULES.md: không được đổi ngưỡng)")
-    first = (ROOT / "README.md").read_text(encoding="utf8").splitlines()[0] if (ROOT / "README.md").exists() else ""
-    if not re.match(r"^#\s*Day 08 Lab\s*[—-]\s*\d{5,}\s*-\s*\S+", first):
-        E("README.md dòng đầu phải là: `# Day 08 Lab — <MSHV> - <Họ và tên>` (xem SUBMISSION.md)")
+    rd = (ROOT / "README.md").read_text(encoding="utf8") if (ROOT / "README.md").exists() else ""
+    m = re.search(r"^#\s*Day 08 Lab\s*[—-]\s*(\d{5,})\s*-\s*\S+", rd, flags=re.M)
+    mshv = m.group(1) if m else None
+    if not m:
+        E("README.md phải có dòng tiêu đề: `# Day 08 Lab — <MSHV> - <Họ và tên>` (xem SUBMISSION.md)")
     if exists(ROOT / "STUDENT.md"):
         t = (ROOT / "STUDENT.md").read_text(encoding="utf8")
         if "<<" in t:
@@ -98,6 +100,10 @@ def main() -> None:
             E("validate_labels " + line.replace("] LỖI: ", "] ", 1))
     for f in ("pre_traps.coco.json", "traps_key.json"):
         exists(SUB / "prelabel" / f, "(xem GUIDE.md Part 4)")
+    kp = SUB / "prelabel" / "traps_key.json"
+    if kp.exists() and mshv:
+        if str(json.loads(kp.read_text(encoding="utf8")).get("student")) != mshv:
+            E(f"traps_key.json: student không khớp MSHV trong README ({mshv}): tạo bẫy bằng đúng MSHV của bạn")
     masks = list((SUB / "masks").glob("*.jpg")) + list((SUB / "masks").glob("*.png")) if (SUB / "masks").exists() else []
     if len(masks) < 3:
         E(f"submission/masks/: {len(masks)} ảnh mask, cần ≥ 3 (kết quả SAM của 3 vật, xem GUIDE.md Part 5)")

@@ -55,7 +55,7 @@ Sinh `work/tasks/{gold,review}/` (thêm `pilot`, `seg`, `selfcheck` nếu chạy
 <img src="assets/cvat/cvat-actions-menu.jpg" width="260" alt="Menu Actions của Task trong CVAT">
 
 1. Task → menu **Actions (⋮) → Upload annotations**.
-2. **Import format: COCO 1.0** → chọn file `.json` (ví dụ `submission/prelabel/pre_traps.coco.json`) → **OK**. CVAT nhận được cả `.json` lẫn `.zip`.
+2. **Import format: COCO 1.0** → chọn file `.json` (ví dụ `submission/prelabel/pre_traps_import.coco.json`) → **OK**. CVAT nhận được cả `.json` lẫn `.zip`.
 3. Mở Task: đếm số box có trong ảnh đầu tiên và so với `viz/` bạn xem trước. Lệch nhiều = nhãn đang sai (xem mục 8).
 
 ### 3b. (Nâng cao) Mask nhiều ảnh: XML thay vì COCO

@@ -28,10 +28,12 @@ flowchart LR
 
 ## Từng bước
 
+0. **Trên máy bạn** (một lần): `pip install -r requirements-local.txt` (phần nhẹ để chạy script đo, không có torch). `check_env.py` sẽ báo FAIL ở mục torch / ultralytics: bình thường, vì model chạy trên Colab.
+
 1. Bấm nút **Mở trong Colab** ở trên (cần tài khoản Google). Menu **Runtime → Change runtime type → T4 GPU → Save**.
 2. Chạy lần lượt các ô từ trên xuống (`Shift+Enter`). Ô 0 sao chép mã nguồn lab; có thể đổi `REPO_URL` thành repo fork **public** của bạn.
 3. Ô 2 tải model. SAM là **bắt buộc**: `core` đã có SAM 2.1; muốn SAM 1 bỏ comment dòng `--set sam1`.
-4. Ô 8 gói kết quả thành `colab_outputs.zip` và tải về. **Giải nén vào thư mục repo trên máy bạn**, giữ nguyên đường dẫn (`work/prelabel/...`, `submission/prelabel/...`).
+4. Notebook có hai điểm tải về: `colab_stage1.zip` (ô 5, sau khi chạy mọi ảnh) và `colab_outputs.zip` (ô 8, cuối). **Giải nén vào thư mục repo trên máy bạn**, giữ nguyên đường dẫn (`work/prelabel/...`, `submission/masks/...`). Windows: chuột phải file zip → *Extract All…* → chọn **thư mục gốc repo** (không phải thư mục con), để `work/` nằm cạnh `scripts/`. Hoặc PowerShell: `Expand-Archive colab_stage1.zip -DestinationPath . -Force`.
 5. Tiếp tục theo [CVAT_AI.md](CVAT_AI.md) mục 3 (nạp vào CVAT) và `GUIDE.md`.
 
 ## Lưu ý quan trọng

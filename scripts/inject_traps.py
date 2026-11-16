@@ -3,7 +3,8 @@
     python scripts/inject_traps.py --pre work/prelabel/merged_review/pre.coco.json --student 22001234
 
 Ghi:
-  submission/prelabel/pre_traps.coco.json   <- file NẠP VÀO CVAT (giống hệt file pre-label thường, không đánh dấu bẫy)
+  submission/prelabel/pre_traps_import.coco.json  <- file NẠP VÀO CVAT (chỉ ảnh batch; giống hệt pre-label thường, không đánh dấu bẫy)
+  submission/prelabel/pre_traps.coco.json         <- đầy đủ (batch + gold), dùng cho review_stats --pre
   submission/prelabel/traps_key.json        <- đáp án: KHÔNG MỞ file này trước khi duyệt xong (honor system)
 
 Bốn loại lỗi cài: missing (xoá một box đúng), extra (thêm box ma), wrong_class (đổi lớp), loose (làm box lệch/lỏng).
@@ -119,10 +120,16 @@ def main():
         if "id" in k:
             k["ann_id"] = id_map.get((k["image"], k["id"]))
     save_json(Path(a.out), build_coco(tax, images, anns, {"description": "prelabel (đã cài bẫy)"}))
+    # file NẠP VÀO CVAT: chỉ ảnh batch (Task review không có ảnh gold)
+    ids = {im["id"] for im in images if im["file_name"] in batch}
+    imp = Path(a.out).with_name("pre_traps_import.coco.json")
+    save_json(imp, build_coco(tax, [im for im in images if im["id"] in ids], [x for x in anns if x["image_id"] in ids],
+                              {"description": "prelabel đã cài bẫy, chỉ ảnh batch (nạp vào CVAT)"}))
     save_json(Path(a.key), {"student": a.student, "seed": a.seed, "traps": key})
     c = Counter(k["type"] for k in key)
     print(f"Đã cài {len(key)} bẫy ({', '.join(f'{k}={v}' for k, v in c.items())}) trên {len({k['image'] for k in key})} ảnh.")
-    print(f"-> NẠP VÀO CVAT: {rel(Path(a.out))}")
+    print(f"-> NẠP VÀO CVAT: {rel(imp)}  (chỉ 24 ảnh batch)")
+    print(f"-> Đầy đủ (dùng cho review_stats --pre): {rel(Path(a.out))}")
     print(f"-> Đáp án (đừng mở trước khi duyệt xong): {rel(Path(a.key))}")
 
 

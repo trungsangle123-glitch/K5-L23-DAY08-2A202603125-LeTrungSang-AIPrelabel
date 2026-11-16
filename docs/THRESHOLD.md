@@ -6,20 +6,20 @@ Không có ngưỡng hoàn hảo, chỉ có đánh đổi: ngưỡng **thấp** 
 
 ## Làm gì
 
-1. Gộp pre-label của 4 ảnh gold (ngưỡng thấp 0.10) rồi quét ngưỡng với **nhãn gán tay** của bạn làm chuẩn ([GUIDE.md](../GUIDE.md) Part 3):
+1. Quét ngưỡng trên kết quả thô của hai model, với **nhãn gán tay** của bạn làm chuẩn ([GUIDE.md](../GUIDE.md) Part 3):
    ```bash
-   python scripts/merge_prelabels.py work/prelabel/yoloe_all/pre.coco.json work/prelabel/y26_all/pre.coco.json \
-       --conf 0.1 --iou 0.6 --split gold --out work/prelabel/merged_gold/pre.coco.json
-   python scripts/threshold_sweep.py --pred work/prelabel/merged_gold/pre.coco.json --gold submission/labels/gold_manual.json
+   python scripts/threshold_sweep.py --pred work/prelabel/y26_all/pre.coco.json work/prelabel/yoloe_all/pre.coco.json \
+       --gold submission/labels/gold_manual.json
    ```
+   (Script chỉ dùng 4 ảnh có trong file gold; không cần gộp trước.)
 2. Mở `submission/qc/threshold_sweep.md` (bảng ngưỡng gợi ý) và `threshold_sweep.png` (precision / recall theo ngưỡng).
 3. Copy chuỗi `--thr "..."` in ra vào lệnh `merge_prelabels.py` ở Part 4, và ghi ngưỡng cùng lý do vào `REPORT.md` mục 1.
 
 ## Đọc kết quả
 
-- **Ngưỡng gợi ý** = ngưỡng **cao nhất** mà recall của lớp đó còn ≥ 0.9. Nghĩa là ít box thừa nhất trong khi chưa bỏ sót thêm.
-- Dòng ghi *"KHÔNG đạt recall 90%"*: không ngưỡng nào đạt mục tiêu; script lấy ngưỡng có F1 cao nhất. Hãy nói trong báo cáo vì sao (thường: model không biết lớp đó).
-- Dòng ghi *"không có vật ... trong ảnh gold"*: không đo được; giữ ngưỡng mặc định.
+- **Ngưỡng gợi ý** = ngưỡng **cao nhất (tối đa 0.5)** mà recall của lớp đó còn ≥ 0.9. Nghĩa là ít box thừa nhất trong khi chưa bỏ sót thêm.
+- Lớp có **< 5 vật** trong 4 ảnh gold (thường bus, truck, bicycle) **không được chọn ngưỡng riêng**: script ghi "dùng ngưỡng mặc định" (0.3). Đó là đúng, vì vài vật không đủ để chọn ngưỡng.
+- Dòng *"không ngưỡng nào ≤ 0.5 đạt recall 90%"*: model không biết lớp đó đủ tốt (ví dụ tuk-tuk với YOLO26): nói trong báo cáo, không ép chọn.
 
 ## Hai giới hạn phải nói trong báo cáo
 

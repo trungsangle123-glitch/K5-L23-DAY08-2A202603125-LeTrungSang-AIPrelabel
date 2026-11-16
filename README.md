@@ -25,7 +25,7 @@ Trong **4 giờ trên lớp** (cài đặt làm trước ~45 phút): chạy ba c
 | Click ra mask (**SAM bắt buộc**, chọn SAM 1 · 2.1 · 3) | **SAM** |
 | Gõ chữ ra box + mask (open-vocabulary) | **YOLOE** (nâng cao: Grounding DINO, OWLv2, SAM 3) |
 | Đưa nhãn vào CVAT & review | CVAT: import · AI Tools · `cvat-cli` |
-| Đo & calibration | `review_stats` · `threshold_sweep` · `self_consistency` · QC |
+| Đo & calibration | `review_stats` · `threshold_sweep` · QC · Release / Hold / Rework |
 
 ![Bốn họ model](docs/assets/model_families.png)
 
@@ -96,7 +96,7 @@ Nhãn máy càng trông hợp lý, mắt bạn càng ít nhìn lại ảnh (**th
 <summary><b>Mình dùng máy yếu / Windows / Mac thì sao?</b></summary>
 
 - **Không GPU / RAM ≤ 8 GB:** chạy model trên **[Colab](docs/COLAB.md)** (GPU T4 miễn phí) hoặc dùng `--size n --imgsz 640` + `mobile_sam.pt` (xem [SETUP.md](docs/SETUP.md) mục 5).
-- **Windows:** dùng Git Bash / WSL để chạy y nguyên lệnh, hoặc xem mục "Lộ trình máy yếu" trong [GUIDE.md](GUIDE.md) về PowerShell.
+- **Windows:** dùng Git Bash / WSL để chạy y nguyên lệnh, hoặc xem mục "Máy yếu, Windows, Mac" trong [GUIDE.md](GUIDE.md) về PowerShell.
 - **Mac Apple Silicon:** chạy tốt trên MPS; lỗi MPS thì `--device cpu` hoặc `PYTORCH_ENABLE_MPS_FALLBACK=1`.
 </details>
 
@@ -137,9 +137,9 @@ Chi tiết và cách ghi vào `REPORT.md` mục 1: [docs/MODELS.md](docs/MODELS.
 ## Bạn học được gì
 
 - Chọn đúng **họ model** cho việc: click (SAM) · gõ chữ (YOLOE, Grounding DINO, OWLv2, SAM 3) · danh mục cố định (YOLO26).
-- Đưa nhãn vào CVAT hai cách: **offline import** và **trực tiếp** (AI Tools, `cvat-cli`).
+- Đưa nhãn máy vào CVAT bằng **offline import**; (nâng cao) dùng AI **trực tiếp** trong CVAT (AI Tools, `cvat-cli`).
 - Duyệt bằng **checklist bốn bước**; nhận ra **thiên kiến tự động hóa** bằng **ảnh bẫy** của chính bạn.
 - Đo **AI error profile** (accepted / edited / deleted / added), precision / recall của máy so với **gold gán tay**.
-- **Calibration** bốn tầng: ngưỡng theo lớp · guideline · nhất quán của chính bạn · QC với Release / Hold / Rework.
+- **Calibration**: ngưỡng theo lớp · guideline v1.1 · QC với Release / Hold / Rework (nâng cao: đo nhất quán của chính bạn).
 
 <sub>Ảnh minh hoạ giao diện CVAT trong `docs/assets/cvat/` lấy từ tài liệu CVAT (MIT). Sơ đồ khác do giảng viên vẽ (`docs/assets/make_figures.py`).</sub>

@@ -6,10 +6,10 @@ Mốc tính từ lúc bắt đầu buổi, là điểm **tự kiểm tra**, khô
 |---|---|---|
 | Trước lớp | **CP0** Cài đặt | `check_env.py` SẴN SÀNG (hoặc Colab chạy được); Project CVAT có 8 nhãn; đã đọc label contract |
 | 0:25 | **CP1** Gold | `gold_manual.json` qua `validate_labels` (4 ảnh); chưa hề xem pre-label của 4 ảnh gold; có `time_log` |
-| 1:00 | **CP2** Tour model | `model_log.csv` ≥ 4 dòng có nhận xét (YOLO26, YOLOE, **SAM**); đã chạy `--split all --conf 0.05` |
-| 1:15 | **CP3** Ngưỡng | `threshold_sweep.md` có ngưỡng theo lớp |
-| 1:25 | Nghỉ 10' | |
-| 2:45 | **CP4** Review | `batch_reviewed.json` (24 ảnh); `review_stats.md` có bắt bẫy % |
+| 0:55 | **CP2** Tour model | `model_log.csv` ≥ 4 dòng có nhận xét (YOLO26, YOLOE, **SAM**); đã chạy `--split all --conf 0.05` |
+| 1:05 | **CP3** Ngưỡng | `threshold_sweep.md` có ngưỡng theo lớp |
+| 1:15 | Nghỉ 10' | |
+| 2:50 | **CP4** Review | `batch_reviewed.json` (24 ảnh); `review_stats.md` có bắt bẫy % |
 | 3:05 | **CP5** Mask | ≥ 3 ảnh trong `submission/masks/` |
 | 3:50 | **CP6** Calibration + QC | `calibration_decisions.csv` ≥ 3, `guideline_v1.1`, `REPORT.md` có quyết định |
 | 4:00 | Nộp | `check_submission.py` sạch; đã nộp link |

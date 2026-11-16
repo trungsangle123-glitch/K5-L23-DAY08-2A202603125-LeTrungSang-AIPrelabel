@@ -18,7 +18,7 @@ Chạy ở thư mục gốc repo, venv đã kích hoạt ([SETUP.md](SETUP.md)).
 | C | **YOLOE-26** | ảnh + chữ | box (+ mask) | gọi nhầm lớp, box lỏng, chữ khác cho kết quả khác |
 
 `model_log.csv`: mỗi lần chạy một dòng `run_id, part, model, params, split, n_boxes, sec_per_img, what_went_right, what_went_wrong, decision`.
-`prelabel.py` tự ghi dòng có sẵn các cột đó vào `work/runs.csv` (`part`, nhận xét để trống): copy sang `model_log.csv` rồi điền bằng **mắt nhìn ảnh**. Nhận xét phải **cụ thể** (ảnh nào, vật nào), không viết "kém".
+`prelabel.py` tự ghi dòng có sẵn các cột đó vào `work/runs.csv` (cột `model` ghi cả SAM đã dùng, ví dụ `yolo26-m+sam(sam2.1_b.pt)`) (`part`, nhận xét để trống): copy sang `model_log.csv` rồi điền bằng **mắt nhìn ảnh**. Nhận xét phải **cụ thể** (ảnh nào, vật nào), không viết "kém".
 
 > **Luôn đọc dòng cuối của lệnh**: `Tên thô KHÔNG có trong ánh xạ ...` là các lớp COCO (bottle, umbrella...) bị bỏ vì không có trong taxonomy: đó chính là hộp thoại *Labels matching* của CVAT, ánh xạ thiếu = mất box im lặng.
 
@@ -91,7 +91,7 @@ python scripts/prelabel.py --model yolo26 --size m --classes person,motorbike,ca
 ```
 
 **Nhìn gì.** Mask đúng khi box đúng. Box sai (ví dụ `car` bao cả tuk-tuk) thì mask tô **cả tuk-tuk** và vẫn mang nhãn sai: **sai lớp không phải do mask**.
-So biên mask của SAM 2.1 với mask của YOLO26-seg (A2): cái nào bám sát hơn? Cái nào sót / thừa phần nào?
+So biên mask giữa hai phiên bản SAM (ví dụ `mobile_sam.pt` và `sam2.1_b.pt`, nếu bạn thử cả hai): cái nào bám sát hơn? Cái nào sót / thừa phần nào?
 Lỗi lan truyền: nếu box thừa (không có vật) thì mask là gì? (gợi ý: thử một ảnh có `chair` hoặc `umbrella` bị gán nhầm.)
 
 ---

@@ -85,7 +85,7 @@ SAM 3 là model **gated** trên HuggingFace: phải xin quyền và đăng nhậ
    ```
 4. `python scripts/download_models.py --set sam3` rồi `python scripts/prelabel.py --model sam3 ...` (xem [ADVANCED.md](ADVANCED.md) mục 2).
 
-Chưa được cấp quyền? Bỏ qua mục E, ghi vào `model_log.csv` dòng `sam3` với `decision = skipped (chưa có quyền)`.
+Chưa được cấp quyền? Bỏ qua SAM 3 (chọn SAM 1 hoặc 2.1), ghi vào `model_log.csv` dòng `sam3` với `decision = skipped (chưa có quyền)`.
 Bạn vẫn đạt đủ yêu cầu bằng SAM 2.1.
 
 ## 5. Máy không có GPU (CPU only) — hoặc dùng Google Colab
