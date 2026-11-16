@@ -351,7 +351,38 @@ def two_paths():
     im.save(HERE / "two_paths.png")
 
 
+# --------------------------------------------------------------------------- cây quyết định QC
+def decision_tree():
+    W, H = 1500, 470
+    im = Image.new("RGB", (W, H), "white")
+    d = ImageDraw.Draw(im)
+    text(d, (40, 16), "Chọn Release / Hold / Rework: đi từ trên xuống, dừng ở câu đầu tiên đúng", 26, NAVY, True)
+    rows = [("1", "Guideline còn câu hỏi CHƯA chốt, hoặc dữ liệu hỏng / không dùng được?", "HOLD", ORANGE, "làm rõ rồi quay lại"),
+            ("2", "Ảnh lỗi > 2%  HOẶC  một loại lỗi lặp lại (>= 3 lỗi và >= 50%)  HOẶC  bắt bẫy < 80%  HOẶC  gán lại mù dưới ngưỡng?", "REWORK", RED, "sửa lỗi, đo lại, ghi vòng sau"),
+            ("3", "Không rơi vào hai câu trên", "RELEASE", GREEN, "kèm QC_REPORT + nêu giới hạn mẫu nhỏ")]
+    for i, (n, q, res, c, note) in enumerate(rows):
+        y = 80 + i * 120
+        rrect(d, (40, y, 1000, y + 96), 14, fill="#f7f9fb", outline="#cdd5de")
+        d.ellipse((56, y + 24, 104, y + 72), fill=GRAY)
+        text(d, (80, y + 48), n, 26, "white", True, "mm")
+        words, line, ln = q.split(" "), "", []
+        for w_ in words:
+            if d.textlength(line + w_ + " ", font=font(20)) > 860:
+                ln.append(line); line = ""
+            line += w_ + " "
+        ln.append(line)
+        for k, t in enumerate(ln[:3]):
+            text(d, (124, y + 14 + k * 28), t, 20, NAVY)
+        arrow(d, (1008, y + 48), (1060, y + 48), c)
+        rrect(d, (1070, y + 6, 1460, y + 90), 14, fill=c)
+        text(d, (1265, y + 34), res, 30, "white", True, "mm")
+        text(d, (1265, y + 68), note, 17, "white", False, "mm")
+        if i < 2:
+            text(d, (80, y + 100), "không", 16, GRAY, True, "mm")
+    im.save(HERE / "decision_tree.png")
+
+
 if __name__ == "__main__":
-    for f in (hero, roadmap, families, cvat_job_ui, cvat_labels_raw, cvat_upload_flow, review_checklist, two_paths):
+    for f in (hero, roadmap, families, cvat_job_ui, cvat_labels_raw, cvat_upload_flow, review_checklist, two_paths, decision_tree):
         f()
         print("ok", f.__name__)

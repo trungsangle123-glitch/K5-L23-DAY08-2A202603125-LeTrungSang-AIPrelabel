@@ -126,7 +126,8 @@ Chi tiết và cách ghi vào `recipe.md`: [docs/MODELS.md](docs/MODELS.md) mụ
 | Tour model (YOLO26, SAM, YOLOE, Grounding DINO, OWLv2, SAM 3) | [docs/MODELS.md](docs/MODELS.md) |
 | CVAT: import, AI Tools, `cvat-cli` (có hình) | [docs/CVAT_AI.md](docs/CVAT_AI.md) |
 | Quy trình review, ảnh bẫy | [docs/REVIEW_CHECKLIST.md](docs/REVIEW_CHECKLIST.md) |
-| Calibration & QC, cách đọc số đo | [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md) |
+| Chọn ngưỡng theo lớp (Part 3) | [docs/THRESHOLD.md](docs/THRESHOLD.md) |
+| Calibration & QC (Part 6) | [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md) |
 | Label contract (guideline v1.0) + khung v1.1 | [guideline/](guideline/) |
 | Các script | [scripts/README.md](scripts/README.md) |
 | Nguồn & giấy phép ảnh | [data/README.md](data/README.md), [data/ATTRIBUTION.csv](data/ATTRIBUTION.csv) |

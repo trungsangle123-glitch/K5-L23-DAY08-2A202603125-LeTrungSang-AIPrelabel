@@ -10,7 +10,7 @@ Part 2  Tour model: YOLO26 → SAM 2 → YOLOE → …  60-90'  docs/MODELS.md (
 Part 3  Pilot: duyệt + chọn ngưỡng theo lớp     45-60'
 Part 4  Pre-label batch + ảnh bẫy + review      60-90'  docs/REVIEW_CHECKLIST.md
 Part 5  Segmentation (SAM 2) + CVAT trực tiếp   45-60'  docs/CVAT_AI.md
-Part 6  Calibration + QC + báo cáo              60-90'  docs/CALIBRATION_QC.md
+Part 6  Calibration + QC + báo cáo              60-90'  docs/CALIBRATION_QC.md (Part 3: docs/THRESHOLD.md)
 (Cộng nghỉ giữa các Part. Máy chỉ CPU: xem "Lộ trình máy yếu" bên dưới.)
 ```
 
@@ -114,7 +114,7 @@ Cuối Part 2:
    python scripts/threshold_sweep.py --pred work/prelabel/merged_pilot/pre.coco.json \
        --gold submission/labels/pilot_reviewed.json
    ```
-   Đọc `qc/threshold_sweep.md` và hình `.png`. Lớp nào ít vật (n_gold nhỏ) thì ngưỡng yếu: nói rõ.
+   Đọc `qc/threshold_sweep.md` và hình `.png`. Lớp nào ít vật (n_gold nhỏ) thì ngưỡng yếu: nói rõ. Cách đọc: [docs/THRESHOLD.md](docs/THRESHOLD.md).
 6. Chốt **recipe cuối** trong `submission/recipe.md`: model từng lớp, `--thr` từng lớp, `--iou` loại trùng, segmenter.
 
 **Sản phẩm:** `labels/pilot_reviewed.json`, `qc/threshold_sweep.{csv,md,png}`, `recipe.md` (có ngưỡng và lý do).
@@ -176,7 +176,7 @@ Không chạy được (gói cvat.ai, Mac…)? Ghi **lỗi đầy đủ + bạn 
 
 ## Part 6 — Calibration, QC và báo cáo (60–90 phút)
 
-Chi tiết từng tầng: [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md).
+Chi tiết từng bước: [docs/CALIBRATION_QC.md](docs/CALIBRATION_QC.md).
 
 1. **Gán lại mù** 8 ảnh (sau ≥ 60 phút kể từ lúc duyệt, **theo guideline v1.0**): `prepare_workdirs.py --selfcheck` → Task → `labels/self_check_blind.json` → `self_consistency.py` (so với `batch_reviewed.json`).
 2. **Calibration guideline:** gom ca (câu hỏi mở, `can_review`, lỗi lặp của máy, bẫy lọt, ca lệch ở bước 1) → **mỗi quyết định một dòng** trong `qc/calibration_decisions.csv`
