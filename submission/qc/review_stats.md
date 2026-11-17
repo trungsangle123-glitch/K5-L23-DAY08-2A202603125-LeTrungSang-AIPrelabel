@@ -1,13 +1,13 @@
 # Số đo review (det)
 
 - Ảnh tính: 24 (batch,gold); box máy: 232; đối tượng sau duyệt: 226; ngưỡng accepted: IoU >= 0.9
-- Đã **loại 17 đối tượng nằm quanh các bẫy** khỏi bảng này: lỗi nhân tạo không phản ánh chất lượng máy.
+- Đã **loại 18 đối tượng nằm quanh các bẫy** khỏi bảng này: lỗi nhân tạo không phản ánh chất lượng máy.
 
 ## 1. Bốn trạng thái (AI error profile)
 | Trạng thái | Số | Tỉ lệ | Mẫu số |
 |---|---|---|---|
-| accepted (giữ nguyên) | 225 | 225/232 = 97.0% | 232 box máy |
-| edited (sửa) | 0 | 0/232 = 0.0% | 232 box máy |
+| accepted (giữ nguyên) | 224 | 224/232 = 96.6% | 232 box máy |
+| edited (sửa) | 1 | 1/232 = 0.4% | 232 box máy |
 | deleted (xoá) | 7 | 7/232 = 3.0% | 232 box máy |
 | added (vẽ thêm) | 1 | 1/226 = 0.4% | 226 đối tượng sau duyệt |
 
@@ -17,7 +17,7 @@ Trong số deleted + added, **1 trường hợp là đổi lớp** (máy gán sa
 | Lớp | accepted | edited | deleted | added |
 |---|---|---|---|---|
 | person | 109 | 0 | 1 | 0 |
-| bicycle | 5 | 0 | 0 | 0 |
+| bicycle | 4 | 1 | 0 | 0 |
 | motorbike | 67 | 0 | 2 | 0 |
 | car | 27 | 0 | 0 | 0 |
 | bus | 2 | 0 | 0 | 0 |
@@ -36,12 +36,11 @@ Trong số deleted + added, **1 trường hợp là đổi lớp** (máy gán sa
 (Ảnh gold không nằm trong nhãn sau duyệt: không tính residual / new error. Đó là chủ ý: duyệt lại ảnh bạn vừa tự gán tay sẽ đo trí nhớ, không đo thiên kiến.)
 
 ## 3. Ảnh bẫy
-- Bắt được 0/12 = 0.0% (KTC 95%: 0–24%) (ngưỡng đạt: 80%). Chỉ 12 bẫy nên khoảng tin cậy rất rộng: đọc cùng danh sách bẫy lọt, đừng kết luận chỉ từ %.
-  - loose: 0/3
-  - wrong_class: 0/3
-  - extra: 0/3
-  - missing: 0/3
-  - lọt: img_009.jpg (loose), img_013.jpg (wrong_class), img_006.jpg (wrong_class), img_004.jpg (wrong_class), img_018.jpg (extra), img_031.jpg (loose), img_028.jpg (missing), img_023.jpg (extra), img_022.jpg (loose), img_025.jpg (extra), img_005.jpg (missing), img_024.jpg (missing)
+- Bắt được 12/12 = 100.0% (KTC 95%: 76–100%) (ngưỡng đạt: 80%). Chỉ 12 bẫy nên khoảng tin cậy rất rộng: đọc cùng danh sách bẫy lọt, đừng kết luận chỉ từ %.
+  - loose: 3/3
+  - wrong_class: 3/3
+  - extra: 3/3
+  - missing: 3/3
 
 ## Gợi ý đọc số
 - `deleted` cao → ngưỡng thấp hoặc ánh xạ nhãn sai; `added` cao → máy bỏ sót (xem lớp nào);
