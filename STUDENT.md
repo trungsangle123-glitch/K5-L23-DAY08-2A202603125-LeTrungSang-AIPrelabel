@@ -1,13 +1,13 @@
 # Thông tin học viên
 
-- Họ và tên: <<>>
-- MSHV: <<>>
-- Lớp (L2 / L3 / khác): <<>>
-- Tài khoản GitHub: <<>>
-- Repo bài nộp (URL): <<>>
-- Commit chốt bài (hash): <<>>
-- Máy: <<hệ điều hành, GPU (CUDA / MPS / không có)>>
-- CVAT (Docker): <<phiên bản, ví dụ v2.81.0>>
+- Họ và tên: LeTrungSang
+- MSHV: 2A202603125
+- Lớp (L2 / L3 / khác): <<L2 / L3 / khác>>
+- Tài khoản GitHub: trungsangle123-glitch
+- Repo bài nộp (URL): https://github.com/trungsangle123-glitch/K5-L23-DAY08-2A202603125-LeTrungSang-AIPrelabel
+- Commit chốt bài (hash): <<điền hash commit chốt>>
+- Máy: Windows 11 Pro, NVIDIA GeForce RTX 3050 4 GB (CUDA 12.4)
+- CVAT (Docker): v2.81.0
 
 ## Kết quả tóm tắt (điền cuối bài; số lấy từ `submission/qc/*`, kèm mẫu số)
 
