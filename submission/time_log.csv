@@ -1,2 +1,3 @@
 step,images,minutes,note
 gold_manual,4,17,"gán tay 4 ảnh gold theo guideline v1.0, không dùng AI"
+batch_review,24,20,"duyệt pre-label có cài 12 bẫy trên CVAT theo checklist 4 bước"
