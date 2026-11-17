@@ -5,7 +5,7 @@
 - Lớp (L2 / L3 / khác): L2
 - Tài khoản GitHub: trungsangle123-glitch
 - Repo bài nộp (URL): https://github.com/trungsangle123-glitch/K5-L23-DAY08-2A202603125-LeTrungSang-AIPrelabel
-- Commit chốt bài (hash): cập nhật khi chốt bài
+- Commit chốt bài (hash): ca3ffe19371b7025ec4f0b0609c93b8f1d777cac
 - Máy: Windows 11 Pro, NVIDIA GeForce RTX 3050 6 GB (CUDA 12.4, torch 2.6.0+cu124)
 - CVAT (Docker): v2.81.0
 
