@@ -1,0 +1,6 @@
+image,object_id,error_type,reviewer,note
+img_003.jpg,,khong,LeTrungSang,"Đối chiếu 16 object trong ảnh có ID (work/qc/review/) với nhãn release; không phát hiện bỏ sót/thừa/sai lớp. validate_labels OK."
+img_006.jpg,,khong,LeTrungSang,"Bẫy wrong_class bicycle->person đã sửa ở vòng review trước; kiểm lại box 506.45,319.61,46.81,142.36 đã đúng lớp person. 10 object, không lỗi mới."
+img_014.jpg,,khong,LeTrungSang,"Đối chiếu 12 object; không phát hiện lỗi. validate_labels OK."
+img_031.jpg,,khong,LeTrungSang,"Bẫy loose person đã kéo từ 299.49,67.4,178.32,351.41 về 346.02,135.48,165.17,310.56; 5 object, không lỗi mới."
+img_035.jpg,,khong,LeTrungSang,"Đối chiếu 10 object; không phát hiện lỗi. validate_labels OK."
