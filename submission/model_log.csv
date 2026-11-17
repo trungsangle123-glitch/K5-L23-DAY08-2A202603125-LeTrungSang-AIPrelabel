@@ -1,1 +1,7 @@
 run_id,part,model,params,split,n_boxes,sec_per_img,what_went_right,what_went_wrong,decision
+r05,P2-tour,yolo26-n,"--model yolo26 --size n --split pilot --conf 0.25 --imgsz 640 --device cuda",pilot,120,0.36,,,
+r06,P2-tour,yolo26-n,"--model yolo26 --size n --split pilot --conf 0.5 --imgsz 640 --device cuda",pilot,54,0.37,,,
+r07,P2-tour,yoloe-s,"--model yoloe --classes three_wheeler --split pilot --conf 0.25 --imgsz 640 --device cuda",pilot,5,0.18,,,
+r08,P2-tour,yolo26-n+sam(sam2.1_t.pt),"--model yolo26 --size n --classes person,motorbike,car --images img_004.jpg img_013.jpg --conf 0.3 --imgsz 640 --device cuda --segmenter sam --sam sam2.1_t.pt",custom,10,1.62,,,
+r09,P3-source,yolo26-n,"--model yolo26 --size n --split all --conf 0.05 --imgsz 640 --device cuda --no-viz",all,1223,0.11,,,
+r10,P3-source,yoloe-s,"--model yoloe --classes three_wheeler --split all --conf 0.05 --imgsz 640 --device cuda --no-viz",all,116,0.06,,,
